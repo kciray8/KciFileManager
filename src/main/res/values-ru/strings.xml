@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="confirm">Подтверждение</string>
+    <string name="confirm_delete_file">Вы действительно хотите удалить \'%s\'?</string>
+
+    <!-- For context menu -->
+    <string name="actions">Действия</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_properties">Свойства</string>
+
+    <string name="error_open_folder">Ошибка при открытии папки</string>
+    <string name="enter_name_new_folder">Введите имя для новой папки</string>
+    <string name="enter_name_new_file">Введите имя для нового файла</string>
+    <string name="bytes">[Байт]</string>
+    <string name="size">Размер</string>
+    <string name="up">Вверх</string>
+    <string name="ok">Хорошо</string>
+    <string name="cancel">Закрыть</string>
+</resources>

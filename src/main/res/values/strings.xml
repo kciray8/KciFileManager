@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">KciFileManager</string>
+    <string name="test_str">Test String</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="confirm">Confirm</string>
+    <string name="confirm_delete_file">Would you like to delete \'%s\'?</string>
+    <string name="error_delete_file">Error delete file</string>
+
+    <!-- For context menu -->
+    <string name="actions">Actions</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_properties">Properties</string>
+
+    <string name="error_open_folder">Error open folder</string>
+    <string name="enter_name_new_folder">Enter name for new folder</string>
+    <string name="enter_name_new_file">Enter name for new file</string>
+    <string name="bytes">[Byte]</string>
+    <string name="size">Size</string>
+    <string name="up">Up</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+</resources>
