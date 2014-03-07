@@ -46,6 +46,24 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        MenuItem addNewFileItem = menu.findItem(R.id.add_new_file);
+        addNewFileItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                activeDirView.addNewFile();
+                return false;
+            }
+        });
+
+        MenuItem addNewFolderItem = menu.findItem(R.id.add_new_folder);
+        addNewFolderItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                activeDirView.addNewFolder();
+                return false;
+            }
+        });
+
         return super.onCreateOptionsMenu(menu);
     }
 

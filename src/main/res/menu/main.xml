@@ -7,15 +7,12 @@
         a:id="@+id/add_new_file"
         a:icon="@drawable/add_new_file"
         a:showAsAction="ifRoom"
-        a:onClick="addNewFile"
-
         a:title="Add new file"/>
 
     <item
         a:id="@+id/add_new_folder"
         a:icon="@drawable/add_new_folder"
         a:showAsAction="ifRoom"
-        a:onClick="addNewFolder"
         a:title="Add new folder" />
 
 </menu>

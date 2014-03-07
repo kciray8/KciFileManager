@@ -39,7 +39,6 @@ public class Common {
         toast.show();
     }
 
-
     public static Context getContext() {
         return context;
     }
