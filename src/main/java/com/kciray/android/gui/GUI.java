@@ -23,7 +23,10 @@ package com.kciray.android.gui;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -64,12 +67,12 @@ public class GUI {
     }
 
     public static void toast(String str) {
-        Toast toast = Toast.makeText(Common.getContext(), str, Toast.LENGTH_SHORT);
+        Toast toast = Toast.makeText(getContext(), str, Toast.LENGTH_SHORT);
         toast.show();
     }
 
     public static ProgressDialog showProgressDialog(String message) {
-        ProgressDialog dialog = new ProgressDialog(Common.getContext());
+        ProgressDialog dialog = new ProgressDialog(getContext());
         dialog.setMessage(message);
         dialog.setIndeterminate(true);
         dialog.setCancelable(false);
@@ -79,7 +82,7 @@ public class GUI {
 
     public static void showMessage(String title, String message) {
         AlertDialog alertDialog;
-        alertDialog = new AlertDialog.Builder(Common.getContext()).create();
+        alertDialog = new AlertDialog.Builder(getContext()).create();
         alertDialog.setTitle(title);
         alertDialog.setMessage(message);
         alertDialog.show();
@@ -89,13 +92,15 @@ public class GUI {
         askQuestion(title, message, onYes,null);
     }
 
-    public static void askQuestion(String title, String message, final Runnable onYes, final Runnable onNo) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(Common.getContext());
+    public static void askQuestion(String title, String message,
+                                   final Runnable onYes, final Runnable onNo) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
         builder.setTitle(title);
         builder.setMessage(message);
 
-        builder.setPositiveButton(L.tr(R.string.yes), new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(L.tr(R.string.yes),
+                new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (onYes != null) {
                     onYes.run();
@@ -104,7 +109,8 @@ public class GUI {
             }
         });
 
-        builder.setNegativeButton(L.tr(R.string.no), new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(L.tr(R.string.no),
+                new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (onNo != null) {
@@ -116,6 +122,16 @@ public class GUI {
 
         AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    public static View viewFromRes(int resId){
+        LayoutInflater inflater = (LayoutInflater)
+                getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        return inflater.inflate(resId, null);
+    }
+
+    private static Context getContext(){
+        return Common.getContext();
     }
 }
 

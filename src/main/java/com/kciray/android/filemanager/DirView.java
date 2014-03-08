@@ -30,8 +30,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.kciray.android.L;
 import com.kciray.android.OnInputListener;
@@ -42,16 +43,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DirView extends FrameLayout {
+public class DirView extends LinearLayout {
     private File directory;
     private Context context;
     private DirViewAdapter adapter;
     private ListView listView;
+    private TextView statusView;
 
     public DirView(Activity activity) {
         super(activity);
         this.context = activity;
         listView = new ListView(context);
+
+        statusView = (TextView)GUI.viewFromRes(R.layout.status_bar);
 
         String sdRoot = Environment.getExternalStorageDirectory().getPath();
         setDirectory(sdRoot);
@@ -61,7 +65,8 @@ public class DirView extends FrameLayout {
 
         listView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent,
+                                    View view, int position, long id) {
                 DirElement dirElement = adapter.getItem(position);
 
                 if (dirElement.isBackButton()) {
@@ -89,6 +94,10 @@ public class DirView extends FrameLayout {
         activity.registerForContextMenu(listView);
 
         listView.setAdapter(adapter);
+
+        setOrientation(VERTICAL);
+
+        addView(statusView);
         addView(listView);
     }
 
@@ -115,6 +124,7 @@ public class DirView extends FrameLayout {
         }
 
         adapter.notifyDataSetChanged();
+        statusView.setText(directory.toString());
     }
 
     public void setDirectory(String directory) {

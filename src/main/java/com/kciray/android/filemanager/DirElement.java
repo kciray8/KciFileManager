@@ -90,8 +90,7 @@ public class DirElement{
     public static DirElement getBackNavElement(Context context){
         DirElement dirElement = new DirElement(context);
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        dirElement.view = inflater.inflate(R.layout.direlement, null);
+        dirElement.view = GUI.viewFromRes(R.layout.direlement);
 
         TextView pathText = (TextView) dirElement.view.findViewById(R.id.path);
         pathText.setText("(...) "+ L.tr(R.string.up));
