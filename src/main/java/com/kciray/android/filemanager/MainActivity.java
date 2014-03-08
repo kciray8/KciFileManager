@@ -95,6 +95,9 @@ public class MainActivity extends Activity {
             case PROPERTIES:
                 activeDirView.showProp(itemIndex);
                 break;
+            case RENAME:
+                activeDirView.renameItem(itemIndex);
+                break;
         }
 
         return true;

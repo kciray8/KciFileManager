@@ -22,8 +22,10 @@
 package com.kciray.android.gui;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.kciray.android.Common;
 import com.kciray.android.L;
@@ -32,11 +34,18 @@ import com.kciray.android.filemanager.R;
 
 public class GUI {
     public static void inputString(String title, final OnInputListener okListener) {
+        inputString(title,null,okListener);
+    }
+
+    public static void inputString(String title,String defaultStr, final OnInputListener okListener) {
         AlertDialog.Builder alert = new AlertDialog.Builder(Common.getContext());
 
         alert.setTitle(title);
 
         final EditText input = new EditText(Common.getContext());
+        if(defaultStr != null){
+            input.setText(defaultStr);
+        }
         alert.setView(input);
         alert.setPositiveButton(L.tr(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
@@ -51,6 +60,61 @@ public class GUI {
             }
         });
 
+        alert.show();
+    }
+
+    public static void toast(String str) {
+        Toast toast = Toast.makeText(Common.getContext(), str, Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+    public static ProgressDialog showProgressDialog(String message) {
+        ProgressDialog dialog = new ProgressDialog(Common.getContext());
+        dialog.setMessage(message);
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.show();
+        return dialog;
+    }
+
+    public static void showMessage(String title, String message) {
+        AlertDialog alertDialog;
+        alertDialog = new AlertDialog.Builder(Common.getContext()).create();
+        alertDialog.setTitle(title);
+        alertDialog.setMessage(message);
+        alertDialog.show();
+    }
+
+    public static void askQuestion(String title, String message, final Runnable onYes){
+        askQuestion(title, message, onYes,null);
+    }
+
+    public static void askQuestion(String title, String message, final Runnable onYes, final Runnable onNo) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(Common.getContext());
+
+        builder.setTitle(title);
+        builder.setMessage(message);
+
+        builder.setPositiveButton(L.tr(R.string.yes), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (onYes != null) {
+                    onYes.run();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton(L.tr(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (onNo != null) {
+                    onNo.run();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
         alert.show();
     }
 }

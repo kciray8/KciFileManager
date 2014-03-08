@@ -33,7 +33,6 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
-import com.kciray.android.Common;
 import com.kciray.android.L;
 import com.kciray.android.OnInputListener;
 import com.kciray.android.gui.GUI;
@@ -79,7 +78,7 @@ public class DirView extends FrameLayout {
                             directory = dirElementFile;
                             rebuildDir();
                         } else {
-                            Common.toast(L.tr(R.string.error_open_folder));
+                            GUI.toast(L.tr(R.string.error_open_folder));
                         }
                     }
                 }
@@ -174,6 +173,7 @@ public class DirView extends FrameLayout {
 
             menu.add(Menu.NONE, FileMenu.DELETE.ordinal(), Menu.NONE, L.tr(R.string.action_delete));
             menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(), Menu.NONE, L.tr(R.string.action_properties));
+            menu.add(Menu.NONE, FileMenu.RENAME.ordinal(), Menu.NONE, "Переименовать");
         }
     }
 
@@ -181,7 +181,7 @@ public class DirView extends FrameLayout {
         final DirElement dirElement = adapter.getItem(position);
         String fileName = dirElement.getFile().getName();
 
-        Common.askQuestion(L.tr(R.string.confirm), String.format(L.tr(R.string.confirm_delete_file), fileName),
+        GUI.askQuestion(L.tr(R.string.confirm), String.format(L.tr(R.string.confirm_delete_file), fileName),
                 new Runnable() {
                     @Override
                     public void run() {
@@ -189,7 +189,7 @@ public class DirView extends FrameLayout {
                         if (success) {
                             dynamicallyRemoveDirElement(dirElement);
                         } else {
-                            Common.toast(L.tr(R.string.error_delete_file));
+                            GUI.toast(L.tr(R.string.error_delete_file));
                         }
                     }
                 });
@@ -209,7 +209,12 @@ public class DirView extends FrameLayout {
         DirElement dirElement = adapter.getItem(position);
 
         String message = L.tr(R.string.size) + " = " + dirElement.getFile().length() + " " +L.tr(R.string.bytes);
-        Common.showMessage(L.tr(R.string.action_properties), message);
+        GUI.showMessage(L.tr(R.string.action_properties), message);
+    }
+
+    public void renameItem(int itemIndex) {
+        DirElement dirElement = adapter.getItem(itemIndex);
+        dirElement.rename();
     }
 }
 

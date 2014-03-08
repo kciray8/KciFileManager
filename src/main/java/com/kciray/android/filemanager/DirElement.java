@@ -27,7 +27,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.kciray.Q;
 import com.kciray.android.L;
+import com.kciray.android.OnInputListener;
+import com.kciray.android.gui.GUI;
 
 import java.io.File;
 
@@ -35,6 +38,7 @@ public class DirElement{
     private File file;
     private View view;
     private boolean backButton;
+    private TextView pathText;
 
     public DirElement(Context context) {
     }
@@ -49,13 +53,30 @@ public class DirElement{
 
         view = inflater.inflate(R.layout.direlement,null);
 
-        TextView pathText = (TextView)view.findViewById(R.id.path);
+        pathText = (TextView)view.findViewById(R.id.path);
         pathText.setText(text);
 
         if (file.isDirectory()) {
             ImageView imageView = (ImageView) view.findViewById(R.id.icon);
             imageView.setImageResource(R.drawable.folder);
         }
+    }
+
+    public void rename(){
+        GUI.inputString("Введите новое имя",file.getName(),new OnInputListener() {
+            @Override
+            public void onInput(String str) {
+                Q.out(file.getParent());
+                Q.out(str);
+
+                boolean success = file.renameTo(new File(file.getParent(),str));
+                if(success){
+                    pathText.setText(str);
+                }else{
+                    GUI.toast("Ошибка при переименовании файла");
+                }
+            }
+        });
     }
 
     public boolean isDir(){
