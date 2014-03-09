@@ -28,5 +28,6 @@ android {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:18.0.+"
+    compile 'com.android.support:appcompat-v7:18.0.+'
+    compile files('lib/commons-io-2.4.jar')
 }

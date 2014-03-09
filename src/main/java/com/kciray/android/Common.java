@@ -60,4 +60,7 @@ public class Common {
         context.sendBroadcast(addIntent);
     }
 
+    public static void runParallel(Runnable runnable){
+        new Thread(runnable).start();
+    }
 }

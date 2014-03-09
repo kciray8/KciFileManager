@@ -98,6 +98,9 @@ public class MainActivity extends Activity {
             case RENAME:
                 activeDirView.renameItem(itemIndex);
                 break;
+            case CALC_SIZE:
+                activeDirView.calcFolderSize(itemIndex);
+                break;
         }
 
         return true;

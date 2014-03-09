@@ -22,6 +22,7 @@
 package com.kciray.android.filemanager;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Environment;
 import android.view.ContextMenu;
@@ -34,9 +35,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.kciray.android.Common;
 import com.kciray.android.L;
 import com.kciray.android.OnInputListener;
 import com.kciray.android.gui.GUI;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,13 +54,15 @@ public class DirView extends LinearLayout {
     private DirViewAdapter adapter;
     private ListView listView;
     private TextView statusView;
+    Activity activity;
 
     public DirView(Activity activity) {
         super(activity);
         this.context = activity;
+        this.activity = activity;
         listView = new ListView(context);
 
-        statusView = (TextView)GUI.viewFromRes(R.layout.status_bar);
+        statusView = (TextView) GUI.viewFromRes(R.layout.status_bar);
 
         String sdRoot = Environment.getExternalStorageDirectory().getPath();
         setDirectory(sdRoot);
@@ -181,12 +187,24 @@ public class DirView extends LinearLayout {
 
     public void handleContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            DirElement element = adapter.getItem(info.position);
+            File file = element.getFile();
+
             menu.setHeaderTitle(L.tr(R.string.actions));
             menu.setHeaderIcon(R.drawable.info);
 
-            menu.add(Menu.NONE, FileMenu.DELETE.ordinal(), Menu.NONE, L.tr(R.string.action_delete));
-            menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(), Menu.NONE, L.tr(R.string.action_properties));
-            menu.add(Menu.NONE, FileMenu.RENAME.ordinal(), Menu.NONE, "Переименовать");
+            menu.add(Menu.NONE, FileMenu.DELETE.ordinal(),
+                    Menu.NONE, L.tr(R.string.action_delete));
+            menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(),
+                    Menu.NONE, L.tr(R.string.action_properties));
+            menu.add(Menu.NONE, FileMenu.RENAME.ordinal(),
+                    Menu.NONE, "Переименовать");
+            if ((file != null) && (file.isDirectory())) {
+
+                menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
+                        Menu.NONE, "Подсчитать размер папки");
+            }
         }
     }
 
@@ -208,6 +226,28 @@ public class DirView extends LinearLayout {
                 });
     }
 
+    public void calcFolderSize(int position) {
+        final DirElement dirElement = adapter.getItem(position);
+        final ProgressDialog progressDialog = GUI.showProgressDialog(
+                "Подсчёт места для папки " + dirElement.getFile().getName());
+
+        Common.runParallel(new Runnable() {
+            @Override
+            public void run() {
+                long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
+                final String strSize = FileUtils.byteCountToDisplaySize(dirSize);
+
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.cancel();
+                        GUI.showMessage("Размер директории:", strSize);
+                    }
+                });
+            }
+        });
+    }
+
     boolean recursiveDelete(File f) {
         if (f.isDirectory()) {
             File[] listFiles = f.listFiles();
@@ -221,13 +261,14 @@ public class DirView extends LinearLayout {
     public void showProp(int position) {
         DirElement dirElement = adapter.getItem(position);
 
-        String message = L.tr(R.string.size) + " = " + dirElement.getFile().length() + " " +L.tr(R.string.bytes);
+        String message = L.tr(R.string.size) + " = " + dirElement.getFile().length() + " " + L.tr(R.string.bytes);
         GUI.showMessage(L.tr(R.string.action_properties), message);
     }
 
     public void renameItem(int itemIndex) {
         DirElement dirElement = adapter.getItem(itemIndex);
         dirElement.rename();
+        adapter.sort();
     }
 }
 
@@ -271,7 +312,7 @@ class DirViewAdapter extends BaseAdapter {
         elements.clear();
     }
 
-    public void sort(){
-        Collections.sort(elements,DirElement.getComparator());
+    public void sort() {
+        Collections.sort(elements, DirElement.getComparator());
     }
 }
