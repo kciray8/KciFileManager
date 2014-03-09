@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:a="http://schemas.android.com/apk/res/android"
     a:layout_width="match_parent"
     a:layout_height="match_parent">
 
@@ -11,6 +11,7 @@
         a:maxWidth="36dp"
         a:id="@+id/icon"
         a:gravity="center"
+        a:layout_alignParentLeft="true"
         a:layout_width="wrap_content" />
 
     <TextView
@@ -22,7 +23,17 @@
         a:layout_width="wrap_content"
         a:textStyle="bold"
         a:textColor="#ff2f3774"
-
+        a:lines="1"
+        a:layout_centerVertical="true"
+        a:layout_toRightOf="@+id/icon"
         a:id="@+id/path"/>
 
-</LinearLayout>
+    <TextView
+        a:layout_height="wrap_content"
+        a:layout_width="wrap_content"
+        a:textSize="12sp"
+        a:layout_alignParentBottom="true"
+        a:layout_alignParentRight="true"
+        a:id="@+id/size"/>
+
+</RelativeLayout>

@@ -34,7 +34,7 @@ import com.kciray.android.gui.GUI;
 
 import java.io.File;
 
-public class DirElement{
+public class DirElement {
     private File file;
     private View view;
     private boolean backButton;
@@ -46,54 +46,60 @@ public class DirElement{
     public DirElement(Context context, File file) {
         this.file = file;
 
-        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         String text = "";
-        text+=file.getName();
+        text += file.getName();
 
-        view = inflater.inflate(R.layout.direlement,null);
+        view = inflater.inflate(R.layout.direlement, null);
 
-        pathText = (TextView)view.findViewById(R.id.path);
+        pathText = (TextView) view.findViewById(R.id.path);
         pathText.setText(text);
 
         if (file.isDirectory()) {
             ImageView imageView = (ImageView) view.findViewById(R.id.icon);
             imageView.setImageResource(R.drawable.folder);
+        } else {
+            TextView sizeTextView = (TextView) view.findViewById(R.id.size);
+            long fileSize = file.length();
+            String formFileSize = String.format("%,d %s",fileSize,"[Byte]");
+            sizeTextView.setText(formFileSize);
         }
     }
 
-    public void rename(){
-        GUI.inputString("Введите новое имя",file.getName(),new OnInputListener() {
+    public void rename() {
+        GUI.inputString("Введите новое имя", file.getName(), new OnInputListener() {
             @Override
             public void onInput(String str) {
                 Q.out(file.getParent());
                 Q.out(str);
 
-                boolean success = file.renameTo(new File(file.getParent(),str));
-                if(success){
+                boolean success = file.renameTo(new File(file.getParent(), str));
+                if (success) {
                     pathText.setText(str);
-                }else{
+                } else {
                     GUI.toast("Ошибка при переименовании файла");
                 }
             }
         });
     }
 
-    public boolean isDir(){
+    public boolean isDir() {
         return file.isDirectory();
     }
 
     /**
      * Create element for navigation to parent directory
+     *
      * @return
      */
-    public static DirElement getBackNavElement(Context context){
+    public static DirElement getBackNavElement(Context context) {
         DirElement dirElement = new DirElement(context);
 
         dirElement.view = GUI.viewFromRes(R.layout.direlement);
 
         TextView pathText = (TextView) dirElement.view.findViewById(R.id.path);
-        pathText.setText("(...) "+ L.tr(R.string.up));
+        pathText.setText("(...) " + L.tr(R.string.up));
 
         dirElement.backButton = true;
 
