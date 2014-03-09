@@ -41,6 +41,7 @@ import com.kciray.android.gui.GUI;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DirView extends LinearLayout {
@@ -125,6 +126,7 @@ public class DirView extends LinearLayout {
 
         adapter.notifyDataSetChanged();
         statusView.setText(directory.toString());
+        adapter.sort();
     }
 
     public void setDirectory(String directory) {
@@ -150,6 +152,7 @@ public class DirView extends LinearLayout {
         FileScanner.addToCach(file, dirElement);
         adapter.addElement(dirElement);
         adapter.notifyDataSetChanged();
+        adapter.sort();
     }
 
     private void dynamicallyRemoveDirElement(DirElement dirElement) {
@@ -266,5 +269,9 @@ class DirViewAdapter extends BaseAdapter {
 
     public void clear() {
         elements.clear();
+    }
+
+    public void sort(){
+        Collections.sort(elements,DirElement.getComparator());
     }
 }

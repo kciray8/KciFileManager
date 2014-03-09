@@ -33,6 +33,7 @@ import com.kciray.android.OnInputListener;
 import com.kciray.android.gui.GUI;
 
 import java.io.File;
+import java.util.Comparator;
 
 public class DirElement {
     private File file;
@@ -116,5 +117,38 @@ public class DirElement {
 
     public boolean isBackButton() {
         return backButton;
+    }
+
+    static Comparator<DirElement> comparator = new DirElementComparator();
+    public static Comparator<DirElement> getComparator(){
+        return comparator;
+    }
+
+    private static class DirElementComparator implements Comparator<DirElement>{
+        @Override
+        public int compare(DirElement lhs, DirElement rhs) {
+            //Back button always in top
+            if(lhs.isBackButton()){
+                return -1;
+            }
+            if(rhs.isBackButton()){
+                return 1;
+            }
+
+            //One of element - is directory
+            if((lhs.getFile().isDirectory())&&(!rhs.getFile().isDirectory())){
+                return -1;
+            }
+            if ((!lhs.getFile().isDirectory()) && (rhs.getFile().isDirectory())) {
+                return 1;
+            }
+
+            return lhs.getFile().getName().compareTo(rhs.getFile().getName());
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            return false;
+        }
     }
 }
