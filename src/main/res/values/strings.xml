@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KciFileManager</string>
+    <string name="app_name">KciFM</string>
     <string name="test_str">Test String</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

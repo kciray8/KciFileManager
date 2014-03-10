@@ -27,7 +27,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.kciray.Q;
 import com.kciray.android.L;
 import com.kciray.android.OnInputListener;
 import com.kciray.android.gui.GUI;
@@ -72,8 +71,6 @@ public class DirElement {
         GUI.inputString("Введите новое имя", file.getName(), new OnInputListener() {
             @Override
             public void onInput(String str) {
-                Q.out(file.getParent());
-                Q.out(str);
 
                 boolean success = file.renameTo(new File(file.getParent(), str));
                 if (success) {
@@ -94,8 +91,8 @@ public class DirElement {
      *
      * @return
      */
-    public static DirElement getBackNavElement(Context context) {
-        DirElement dirElement = new DirElement(context);
+    public static DirElement getBackNavElement(Context context, File file) {
+        DirElement dirElement = new DirElement(context,file);
 
         dirElement.view = GUI.viewFromRes(R.layout.direlement);
 

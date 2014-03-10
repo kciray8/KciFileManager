@@ -55,6 +55,7 @@ public class DirView extends LinearLayout {
     private ListView listView;
     private TextView statusView;
     Activity activity;
+    DirElement backNavElement;
 
     public DirView(Activity activity) {
         super(activity);
@@ -110,7 +111,8 @@ public class DirView extends LinearLayout {
 
     private void rebuildDir() {
         adapter.clear();
-        adapter.addElement(DirElement.getBackNavElement(context));
+        backNavElement = DirElement.getBackNavElement(context, directory);
+        adapter.addElement(backNavElement);
 
         File[] subFiles = null;
         subFiles = directory.listFiles();
@@ -189,22 +191,28 @@ public class DirView extends LinearLayout {
         if (v == listView) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             DirElement element = adapter.getItem(info.position);
-            File file = element.getFile();
-
-            menu.setHeaderTitle(L.tr(R.string.actions));
-            menu.setHeaderIcon(R.drawable.info);
-
-            menu.add(Menu.NONE, FileMenu.DELETE.ordinal(),
-                    Menu.NONE, L.tr(R.string.action_delete));
-            menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(),
-                    Menu.NONE, L.tr(R.string.action_properties));
-            menu.add(Menu.NONE, FileMenu.RENAME.ordinal(),
-                    Menu.NONE, "Переименовать");
-            if ((file != null) && (file.isDirectory())) {
-
-                menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
-                        Menu.NONE, "Подсчитать размер папки");
+            if (element.isBackButton()) {
+                //Some action
+            } else {
+                File file = element.getFile();
+                showActionsForFile(file, menu);
             }
+        }
+    }
+
+    private void showActionsForFile(File file, ContextMenu menu) {
+        menu.setHeaderTitle(L.tr(R.string.actions));
+        menu.setHeaderIcon(R.drawable.info);
+
+        menu.add(Menu.NONE, FileMenu.DELETE.ordinal(),
+                Menu.NONE, L.tr(R.string.action_delete));
+        menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(),
+                Menu.NONE, L.tr(R.string.action_properties));
+        menu.add(Menu.NONE, FileMenu.RENAME.ordinal(),
+                Menu.NONE, "Переименовать");
+        if ((file != null) && (file.isDirectory())) {
+            menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
+                    Menu.NONE, "Подсчитать размер папки");
         }
     }
 
@@ -269,6 +277,11 @@ public class DirView extends LinearLayout {
         DirElement dirElement = adapter.getItem(itemIndex);
         dirElement.rename();
         adapter.sort();
+        statusView.setText(directory.toString());
+    }
+
+    public void showRootActions() {
+        activity.openContextMenu(backNavElement.getView());
     }
 }
 
