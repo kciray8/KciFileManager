@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:a="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:a="http://schemas.android.com/apk/res/android">
 
-    <!--item
-        a:id="@+id/show_folder_prop"
+    <item
+        a:id="@+id/show_root_actions"
         a:icon="@drawable/folder"
         a:showAsAction="always"
-        a:title="Show folder properties" /-->
+        a:title="Show root Actions" />
 
     <item
         a:id="@+id/add_new_file"
         a:icon="@drawable/add_new_file"
         a:showAsAction="always"
-        a:title="Add new file"/>
+        a:title="Add new file" />
 
     <item
         a:id="@+id/add_new_folder"
@@ -21,4 +20,10 @@
         a:showAsAction="always"
         a:title="Add new folder" />
 
+    <!--item
+        a:id="@+id/utils"
+        a:showAsAction="never"
+        a:title="Утилиты">
+
+    </item-->
 </menu>

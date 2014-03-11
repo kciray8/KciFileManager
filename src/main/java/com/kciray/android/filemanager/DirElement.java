@@ -35,16 +35,23 @@ import java.io.File;
 import java.util.Comparator;
 
 public class DirElement {
+    public void setFile(File file) {
+        this.file = file;
+    }
+
     private File file;
     private View view;
     private boolean backButton;
     private TextView pathText;
+    private TextView sizeTextView;
+    private DirView dirView;
 
     public DirElement(Context context) {
     }
 
-    public DirElement(Context context, File file) {
+    public DirElement(Context context, File file, DirView dirView) {
         this.file = file;
+        this.dirView = dirView;
 
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -52,6 +59,7 @@ public class DirElement {
         text += file.getName();
 
         view = inflater.inflate(R.layout.direlement, null);
+        sizeTextView = (TextView) view.findViewById(R.id.size);
 
         pathText = (TextView) view.findViewById(R.id.path);
         pathText.setText(text);
@@ -60,21 +68,31 @@ public class DirElement {
             ImageView imageView = (ImageView) view.findViewById(R.id.icon);
             imageView.setImageResource(R.drawable.folder);
         } else {
-            TextView sizeTextView = (TextView) view.findViewById(R.id.size);
             long fileSize = file.length();
-            String formFileSize = String.format("%,d %s",fileSize,"[Byte]");
-            sizeTextView.setText(formFileSize);
+            setFileSize(fileSize);
         }
+    }
+
+    public void setFileSize(long fileSize) {
+        String formFileSize = String.format("%,d %s", fileSize, "[Byte]");
+        sizeTextView.setText(formFileSize);
     }
 
     public void rename() {
         GUI.inputString("Введите новое имя", file.getName(), new OnInputListener() {
             @Override
             public void onInput(String str) {
-
-                boolean success = file.renameTo(new File(file.getParent(), str));
+                File oldFile = file;
+                File newFile = new File(file.getParent(), str);
+                boolean success = file.renameTo(newFile);
                 if (success) {
-                    pathText.setText(str);
+                    file = newFile;
+                    if (!isBackButton()) {
+                        pathText.setText(str);
+                    }else{
+                        FileScanner.deleteFromCash(oldFile);
+                        dirView.updateRootDirectory(file);
+                    }
                 } else {
                     GUI.toast("Ошибка при переименовании файла");
                 }
@@ -91,14 +109,10 @@ public class DirElement {
      *
      * @return
      */
-    public static DirElement getBackNavElement(Context context, File file) {
-        DirElement dirElement = new DirElement(context,file);
+    public static DirElement getBackNavElement(Context context, File file, DirView dirView) {
+        DirElement dirElement = new DirElement(context, file, dirView);
 
-        dirElement.view = GUI.viewFromRes(R.layout.direlement);
-
-        TextView pathText = (TextView) dirElement.view.findViewById(R.id.path);
-        pathText.setText("(...) " + L.tr(R.string.up));
-
+        dirElement.pathText.setText("(...) " + L.tr(R.string.up));
         dirElement.backButton = true;
 
         return dirElement;
@@ -117,23 +131,24 @@ public class DirElement {
     }
 
     static Comparator<DirElement> comparator = new DirElementComparator();
-    public static Comparator<DirElement> getComparator(){
+
+    public static Comparator<DirElement> getComparator() {
         return comparator;
     }
 
-    private static class DirElementComparator implements Comparator<DirElement>{
+    private static class DirElementComparator implements Comparator<DirElement> {
         @Override
         public int compare(DirElement lhs, DirElement rhs) {
             //Back button always in top
-            if(lhs.isBackButton()){
+            if (lhs.isBackButton()) {
                 return -1;
             }
-            if(rhs.isBackButton()){
+            if (rhs.isBackButton()) {
                 return 1;
             }
 
             //One of element - is directory
-            if((lhs.getFile().isDirectory())&&(!rhs.getFile().isDirectory())){
+            if ((lhs.getFile().isDirectory()) && (!rhs.getFile().isDirectory())) {
                 return -1;
             }
             if ((!lhs.getFile().isDirectory()) && (rhs.getFile().isDirectory())) {

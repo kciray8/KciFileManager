@@ -35,12 +35,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.kciray.Q;
 import com.kciray.android.Common;
 import com.kciray.android.L;
 import com.kciray.android.OnInputListener;
+import com.kciray.android.commons.io.FileUtils;
 import com.kciray.android.gui.GUI;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,9 +49,18 @@ import java.util.Collections;
 import java.util.List;
 
 public class DirView extends LinearLayout {
+    public File getDirectory() {
+        return directory;
+    }
+
     private File directory;
     private Context context;
     private DirViewAdapter adapter;
+
+    public ListView getListView() {
+        return listView;
+    }
+
     private ListView listView;
     private TextView statusView;
     Activity activity;
@@ -78,10 +87,7 @@ public class DirView extends LinearLayout {
                 DirElement dirElement = adapter.getItem(position);
 
                 if (dirElement.isBackButton()) {
-                    if (directory.getParentFile() != null) {
-                        directory = directory.getParentFile();
-                        rebuildDir();
-                    }
+                    goUp();
                 } else {
                     File dirElementFile = dirElement.getFile();
                     if (dirElementFile.isDirectory()) {
@@ -100,18 +106,27 @@ public class DirView extends LinearLayout {
         });
 
         activity.registerForContextMenu(listView);
-
         listView.setAdapter(adapter);
-
         setOrientation(VERTICAL);
 
         addView(statusView);
         addView(listView);
     }
 
+    public void goUp() {
+        if (directory.getParentFile() != null) {
+            directory = directory.getParentFile();
+            rebuildDir();
+        }
+    }
+
+    public void setStatus(String str) {
+        statusView.setText(str);
+    }
+
     private void rebuildDir() {
         adapter.clear();
-        backNavElement = DirElement.getBackNavElement(context, directory);
+        backNavElement = DirElement.getBackNavElement(context, directory, this);
         adapter.addElement(backNavElement);
 
         File[] subFiles = null;
@@ -124,7 +139,7 @@ public class DirView extends LinearLayout {
                 if (FileScanner.cachedView(dirElementFile)) {
                     dirElement = FileScanner.getCachedView(dirElementFile);
                 } else {
-                    dirElement = new DirElement(context, dirElementFile);
+                    dirElement = new DirElement(context, dirElementFile, this);
                     FileScanner.addToCach(dirElementFile, dirElement);
                 }
 
@@ -156,7 +171,7 @@ public class DirView extends LinearLayout {
     }
 
     private void dynamicallyAddFile(File file) {
-        DirElement dirElement = new DirElement(context, file);
+        DirElement dirElement = new DirElement(context, file, this);
         FileScanner.addToCach(file, dirElement);
         adapter.addElement(dirElement);
         adapter.notifyDataSetChanged();
@@ -164,8 +179,12 @@ public class DirView extends LinearLayout {
     }
 
     private void dynamicallyRemoveDirElement(DirElement dirElement) {
-        adapter.removeElement(dirElement);
-        adapter.notifyDataSetChanged();
+        if (!dirElement.isBackButton()) {
+            adapter.removeElement(dirElement);
+            adapter.notifyDataSetChanged();
+        } else {
+            findAndDeleteViewWithFile(dirElement.getFile());
+        }
     }
 
     public void addNewFile() {
@@ -192,7 +211,8 @@ public class DirView extends LinearLayout {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             DirElement element = adapter.getItem(info.position);
             if (element.isBackButton()) {
-                //Some action
+                File file = element.getFile();
+                showActionsForFile(file, menu);
             } else {
                 File file = element.getFile();
                 showActionsForFile(file, menu);
@@ -201,15 +221,27 @@ public class DirView extends LinearLayout {
     }
 
     private void showActionsForFile(File file, ContextMenu menu) {
+        boolean isRoot = file.getAbsolutePath().equals("/");
+        Q.out(file.getAbsolutePath());
+
         menu.setHeaderTitle(L.tr(R.string.actions));
         menu.setHeaderIcon(R.drawable.info);
 
-        menu.add(Menu.NONE, FileMenu.DELETE.ordinal(),
-                Menu.NONE, L.tr(R.string.action_delete));
-        menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(),
-                Menu.NONE, L.tr(R.string.action_properties));
-        menu.add(Menu.NONE, FileMenu.RENAME.ordinal(),
-                Menu.NONE, "Переименовать");
+        if (!isRoot) {
+            menu.add(Menu.NONE, FileMenu.DELETE.ordinal(),
+                    Menu.NONE, L.tr(R.string.action_delete));
+        }
+
+        if (!file.isDirectory()) {
+            menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(),
+                    Menu.NONE, L.tr(R.string.action_properties));
+        }
+
+        if (!isRoot) {
+            menu.add(Menu.NONE, FileMenu.RENAME.ordinal(),
+                    Menu.NONE, "Переименовать");
+        }
+
         if ((file != null) && (file.isDirectory())) {
             menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
                     Menu.NONE, "Подсчитать размер папки");
@@ -224,6 +256,9 @@ public class DirView extends LinearLayout {
                 new Runnable() {
                     @Override
                     public void run() {
+                        if (dirElement.isBackButton()) {
+                            goUp();
+                        }
                         boolean success = recursiveDelete(dirElement.getFile());
                         if (success) {
                             dynamicallyRemoveDirElement(dirElement);
@@ -234,22 +269,37 @@ public class DirView extends LinearLayout {
                 });
     }
 
+    private void findAndDeleteViewWithFile(File file) {
+        for (DirElement element : adapter.elements) {
+            if (element.getFile().getAbsolutePath().equals(file.getAbsolutePath())) {
+                adapter.removeElement(element);
+                adapter.notifyDataSetChanged();
+                return;
+            }
+        }
+    }
+
     public void calcFolderSize(int position) {
         final DirElement dirElement = adapter.getItem(position);
+        File file = dirElement.getFile();
+        boolean isRoot = file.getAbsolutePath().equals("/");
+        String dirName = isRoot ? "/" : dirElement.getFile().getName();
+
         final ProgressDialog progressDialog = GUI.showProgressDialog(
-                "Подсчёт места для папки " + dirElement.getFile().getName());
+                "Подсчёт размера для папки " + dirName);
 
         Common.runParallel(new Runnable() {
             @Override
             public void run() {
-                long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
-                final String strSize = FileUtils.byteCountToDisplaySize(dirSize);
+                final long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
+                final String strSize = String.format("%,d %s", dirSize, "[Byte]");
 
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         progressDialog.cancel();
                         GUI.showMessage("Размер директории:", strSize);
+                        dirElement.setFileSize(dirSize);
                     }
                 });
             }
@@ -277,11 +327,19 @@ public class DirView extends LinearLayout {
         DirElement dirElement = adapter.getItem(itemIndex);
         dirElement.rename();
         adapter.sort();
-        statusView.setText(directory.toString());
     }
 
     public void showRootActions() {
-        activity.openContextMenu(backNavElement.getView());
+
+    }
+
+    public void updateRootDirectory(File file) {
+        directory = file;
+        setStatus(directory.toString());
+        //Update file path
+        for (DirElement dirElement : adapter.elements) {
+            dirElement.setFile(new File(directory, dirElement.getFile().getName()));
+        }
     }
 }
 

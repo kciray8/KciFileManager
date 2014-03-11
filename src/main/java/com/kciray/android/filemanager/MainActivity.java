@@ -24,11 +24,13 @@ package com.kciray.android.filemanager;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
+import com.kciray.Q;
 import com.kciray.android.Common;
 
 public class MainActivity extends Activity {
@@ -44,8 +46,27 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            activeDirView.goUp();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+
+        MenuItem showFolderPropItem = menu.findItem(R.id.show_root_actions);
+        showFolderPropItem.setOnMenuItemClickListener(new MenuItem.
+                OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                return false;
+            }
+        });
 
         MenuItem addNewFileItem = menu.findItem(R.id.add_new_file);
         addNewFileItem.setOnMenuItemClickListener(new MenuItem.
@@ -66,6 +87,9 @@ public class MainActivity extends Activity {
             }
         });
 
+
+       //MenuItem utilsItem = menu.findItem(R.id.utils);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -79,6 +103,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        Q.out(menu);
         super.onCreateContextMenu(menu, v, menuInfo);
         activeDirView.handleContextMenu(menu, v, menuInfo);
     }

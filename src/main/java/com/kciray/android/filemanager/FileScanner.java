@@ -28,13 +28,21 @@ import java.util.Map;
 public class FileScanner {
     static Map<String, DirElement> dirToView = new HashMap<>();
 
-    static boolean cachedView(File file){
+    static boolean cachedView(File file) {
         return dirToView.containsKey(file.getAbsolutePath());
     }
-    static DirElement getCachedView(File file){
+
+    static DirElement getCachedView(File file) {
         return dirToView.get(file.getAbsolutePath());
     }
-    static void addToCach(File file, DirElement view){
-        dirToView.put(file.getAbsolutePath(),view);
+
+    static void addToCach(File file, DirElement view) {
+        if (!view.isBackButton()) {
+            dirToView.put(file.getAbsolutePath(), view);
+        }
+    }
+
+    static void deleteFromCash(File file){
+        dirToView.remove(file.getAbsolutePath());
     }
 }
