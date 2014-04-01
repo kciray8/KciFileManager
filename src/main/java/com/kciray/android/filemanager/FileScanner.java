@@ -36,13 +36,13 @@ public class FileScanner {
         return dirToView.get(file.getAbsolutePath());
     }
 
-    static void addToCach(File file, DirElement view) {
+    static void addToCache(File file, DirElement view) {
         if (!view.isBackButton()) {
             dirToView.put(file.getAbsolutePath(), view);
         }
     }
 
-    static void deleteFromCash(File file){
+    static void deleteFromCache(File file){
         dirToView.remove(file.getAbsolutePath());
     }
 }

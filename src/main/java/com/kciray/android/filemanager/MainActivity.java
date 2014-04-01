@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
 
         activeDirView = new DirView(this);
         setContentView(activeDirView);
+
     }
 
     @Override
@@ -63,7 +64,7 @@ public class MainActivity extends Activity {
                 OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-
+                openContextMenu(activeDirView.backNavElement.getView());
                 return false;
             }
         });

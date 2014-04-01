@@ -140,7 +140,7 @@ public class DirView extends LinearLayout {
                     dirElement = FileScanner.getCachedView(dirElementFile);
                 } else {
                     dirElement = new DirElement(context, dirElementFile, this);
-                    FileScanner.addToCach(dirElementFile, dirElement);
+                    FileScanner.addToCache(dirElementFile, dirElement);
                 }
 
                 adapter.addElement(dirElement);
@@ -172,7 +172,7 @@ public class DirView extends LinearLayout {
 
     private void dynamicallyAddFile(File file) {
         DirElement dirElement = new DirElement(context, file, this);
-        FileScanner.addToCach(file, dirElement);
+        FileScanner.addToCache(file, dirElement);
         adapter.addElement(dirElement);
         adapter.notifyDataSetChanged();
         adapter.sort();

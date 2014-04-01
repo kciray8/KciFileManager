@@ -90,7 +90,7 @@ public class DirElement {
                     if (!isBackButton()) {
                         pathText.setText(str);
                     }else{
-                        FileScanner.deleteFromCash(oldFile);
+                        FileScanner.deleteFromCache(oldFile);
                         dirView.updateRootDirectory(file);
                     }
                 } else {
