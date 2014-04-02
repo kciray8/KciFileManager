@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:a="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference a:title="Автосортировка"
-        a:summary="Сортировать список файлов и папок автоматически" a:defaultValue="true" a:key="@string/autoSort"  />
+    <CheckBoxPreference
+        a:title="Автосортировка"
+        a:summary="Сортировать список файлов и папок автоматически"
+        a:defaultValue="true"
+        a:key="@string/autoSort" />
 
+    <CheckBoxPreference
+        a:title="Автосохранение"
+        a:summary="Сохранять последнюю рабочую папку при закрытии и открывать при включении"
+        a:defaultValue="true"
+        a:key="@string/autoSaveLastDir" />
 </PreferenceScreen>

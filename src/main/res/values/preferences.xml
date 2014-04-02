@@ -1,3 +1,8 @@
 <resources>
+    <!-- To preference framework -->
     <string name="autoSort">autoSort</string>
+    <string name="autoSaveLastDir">autoSaveLastDir</string>
+    
+    <!-- Non GUI -->
+    <string name="autoSaveLastDirStr">autoSaveLastDirStr</string>
 </resources>

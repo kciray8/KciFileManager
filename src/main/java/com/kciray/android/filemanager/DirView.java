@@ -25,7 +25,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
@@ -96,7 +95,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
 
     static Map<String, ScrollPosition> pathToScroll = new HashMap<>();
 
-    public DirView(Activity activity) {
+    public DirView(Activity activity, String dir) {
         super(activity);
         this.context = activity;
         this.activity = activity;
@@ -104,8 +103,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
 
         statusView = (TextView) GUI.viewFromRes(R.layout.status_bar);
 
-        String sdRoot = Environment.getExternalStorageDirectory().getPath();
-        setDirectory(sdRoot);
+        setDirectory(dir);
 
         adapter = new DirViewAdapter(context);
         rebuildDir();
@@ -433,7 +431,7 @@ class DirViewAdapter extends BaseAdapter {
     }
 
     public void autoSort() {
-        SharedPreferences mainPref = MainActivity.getInstance().getMainPreferences();
+        SharedPreferences mainPref = MainActivity.getInstance().getMainPref();
         String name = MainActivity.getInstance().getResources().getString(R.string.autoSort);
         boolean autoSort = mainPref.getBoolean(name, true);
         if(autoSort){

@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -39,14 +40,18 @@ import com.kciray.android.Common;
 public class MainActivity extends Activity {
     DirView activeDirView;
 
-    public SharedPreferences getMainPreferences() {
-        return mainPreferences;
+    public SharedPreferences getMainPref() {
+        return mainPref;
     }
 
-    SharedPreferences mainPreferences;
+    SharedPreferences mainPref;
 
     public static MainActivity getInstance() {
         return mainActivity;
+    }
+
+    public String getStr(int id) {
+        return getResources().getString(id);
     }
 
     static MainActivity mainActivity;
@@ -55,16 +60,36 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainActivity = this;
-        mainPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mainPref = PreferenceManager.getDefaultSharedPreferences(this);
         Common.setContext(this);
 
-        activeDirView = new DirView(this);
+        String rootSd = Environment.getExternalStorageDirectory().getPath();
+        String dir;
+
+        boolean autoSaveLastDir = mainPref.getBoolean(getStr(R.string.autoSaveLastDir), true);
+        if (autoSaveLastDir) {
+            dir = mainPref.getString(getStr(R.string.autoSaveLastDirStr), rootSd);
+        } else {
+            dir = rootSd;
+        }
+        Q.out(dir);
+
+        activeDirView = new DirView(this, dir);
         setContentView(activeDirView);
     }
 
     @Override
+    protected void onDestroy() {
+        String path = activeDirView.getDirectory().getAbsolutePath();
+        String name = getStr(R.string.autoSaveLastDirStr);
+        mainPref.edit().putString(name, path).commit();
+
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_BACK){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             activeDirView.goUp();
             return true;
         }
@@ -104,20 +129,35 @@ public class MainActivity extends Activity {
             }
         });
 
-        MenuItem settingsItem = menu.findItem(R.id.settings);
-        settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+
+        addMenuAction(menu, R.id.settings, new Runnable() {
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                Intent intent = new Intent(MainActivity.this,FMPreferenceActivity.class);
+            public void run() {
+                Intent intent = new Intent(MainActivity.this, FMPreferenceActivity.class);
                 startActivity(intent);
-                return false;
             }
         });
 
-
-        //MenuItem utilsItem = menu.findItem(R.id.utils);
+        addMenuAction(menu, R.id.close, new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        });
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void addMenuAction(Menu menu, int itemId, final Runnable runnable) {
+        MenuItem settingsItem = menu.findItem(itemId);
+        if (settingsItem != null)
+            settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    runnable.run();
+                    return false;
+                }
+            });
     }
 
     public void addNewFolder(MenuItem item) {

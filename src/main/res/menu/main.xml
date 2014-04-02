@@ -31,4 +31,8 @@
         a:showAsAction="never"
         a:title="Настройки"/>
 
+    <item
+        a:id="@+id/close"
+        a:showAsAction="never"
+        a:title="Закрыть" />
 </menu>
