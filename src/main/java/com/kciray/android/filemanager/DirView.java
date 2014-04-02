@@ -24,6 +24,7 @@ package com.kciray.android.filemanager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -178,10 +179,10 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         }
 
         statusView.setText(directory.toString());
-        adapter.sort();
+        adapter.autoSort();
         adapter.notifyDataSetChanged();
 
-        if(pathToScroll.containsKey(directory.getAbsolutePath())){
+        if (pathToScroll.containsKey(directory.getAbsolutePath())) {
             ScrollPosition scrollPosition = pathToScroll.get(directory.getAbsolutePath());
             //scrollPosition.restore(listView);//Intermitted!!!
             //TODO - fix!
@@ -211,7 +212,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         FileScanner.addToCache(file, dirElement);
         adapter.addElement(dirElement);
         adapter.notifyDataSetChanged();
-        adapter.sort();
+        adapter.autoSort();
     }
 
     private void dynamicallyRemoveDirElement(DirElement dirElement) {
@@ -362,7 +363,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
     public void renameItem(int itemIndex) {
         DirElement dirElement = adapter.getItem(itemIndex);
         dirElement.rename();
-        adapter.sort();
+        adapter.autoSort();
     }
 
     public void showRootActions() {
@@ -429,6 +430,15 @@ class DirViewAdapter extends BaseAdapter {
 
     public void clear() {
         elements.clear();
+    }
+
+    public void autoSort() {
+        SharedPreferences mainPref = MainActivity.getInstance().getMainPreferences();
+        String name = MainActivity.getInstance().getResources().getString(R.string.autoSort);
+        boolean autoSort = mainPref.getBoolean(name, true);
+        if(autoSort){
+            sort();
+        }
     }
 
     public void sort() {

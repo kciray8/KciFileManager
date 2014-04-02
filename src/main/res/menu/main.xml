@@ -24,6 +24,11 @@
         a:id="@+id/utils"
         a:showAsAction="never"
         a:title="Утилиты">
-
     </item-->
+
+    <item
+        a:id="@+id/settings"
+        a:showAsAction="never"
+        a:title="Настройки"/>
+
 </menu>

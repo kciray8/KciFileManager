@@ -22,7 +22,10 @@
 package com.kciray.android.filemanager;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -36,14 +39,27 @@ import com.kciray.android.Common;
 public class MainActivity extends Activity {
     DirView activeDirView;
 
+    public SharedPreferences getMainPreferences() {
+        return mainPreferences;
+    }
+
+    SharedPreferences mainPreferences;
+
+    public static MainActivity getInstance() {
+        return mainActivity;
+    }
+
+    static MainActivity mainActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mainActivity = this;
+        mainPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Common.setContext(this);
 
         activeDirView = new DirView(this);
         setContentView(activeDirView);
-
     }
 
     @Override
@@ -88,8 +104,18 @@ public class MainActivity extends Activity {
             }
         });
 
+        MenuItem settingsItem = menu.findItem(R.id.settings);
+        settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent intent = new Intent(MainActivity.this,FMPreferenceActivity.class);
+                startActivity(intent);
+                return false;
+            }
+        });
 
-       //MenuItem utilsItem = menu.findItem(R.id.utils);
+
+        //MenuItem utilsItem = menu.findItem(R.id.utils);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -133,4 +159,6 @@ public class MainActivity extends Activity {
 
         return true;
     }
+
+
 }
