@@ -144,8 +144,19 @@ public class MainActivity extends Activity {
                 finish();
             }
         });
+        addMenuAction(menu, R.id.about, new Runnable() {
+            @Override
+            public void run() {
+                startNewActivity(AboutActivity.class);
+            }
+        });
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    void startNewActivity(Class<?> cls){
+        Intent intent = new Intent(this, cls);
+        startActivity(intent);
     }
 
     private void addMenuAction(Menu menu, int itemId, final Runnable runnable) {

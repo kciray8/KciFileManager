@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aboutText"><![CDATA[
+        <p>KciFileManager &#169; 2014 </p>
+        <p>Create by <a href="http://kciray.com">Yaroslav aka KciRay</a></p>
+
+<p>При создании этого приложения использовались следующие сторонние продукты:</p>
+
+<h3>Apache Commons IO</h3>
+Сайт - <a href="http://commons.apache.org/proper/commons-io/">http://commons.apache.org/proper/commons-io/</a><br />
+Лицензия - <a href="http://www.apache.org/licenses/">Apache License, Version 2.0</a>
+
+<h3>Blue Bits Icons by Icojam</h3>
+Сайт - <a href="http://www.icojam.com/blog/?p=253">http://www.icojam.com/blog/?p=253</a><br />
+Лицензия - <a href="http://en.wikipedia.org/wiki/Public_domain">Общественное достояние</a>
+    ]]></string>
+</resources>

@@ -26,5 +26,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".FMPreferenceActivity"/>
+        <activity android:name=".AboutActivity" />
+
     </application>
 </manifest>
