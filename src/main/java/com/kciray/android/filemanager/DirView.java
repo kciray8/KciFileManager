@@ -29,6 +29,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
@@ -46,9 +47,35 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class DirView extends LinearLayout {
+class ScrollPosition {
+    private int position;
+    private int y;
+
+    public ScrollPosition(ListView list) {
+        position = list.getFirstVisiblePosition();
+        y = list.getChildAt(0).getTop();
+    }
+
+    public void restore(final ListView list) {
+        list.post(new Runnable() {
+            @Override
+            public void run() {
+                list.setSelectionFromTop(position, y);
+            }
+        });
+    }
+
+    @Override
+    public String toString() {
+        return "[pos=" + position + ",y=" + y + "]";
+    }
+}
+
+public class DirView extends LinearLayout implements AbsListView.OnScrollListener {
     public File getDirectory() {
         return directory;
     }
@@ -61,16 +88,18 @@ public class DirView extends LinearLayout {
         return listView;
     }
 
-    private ListView listView;
+    private FileView listView;
     private TextView statusView;
     Activity activity;
     DirElement backNavElement;
+
+    static Map<String, ScrollPosition> pathToScroll = new HashMap<>();
 
     public DirView(Activity activity) {
         super(activity);
         this.context = activity;
         this.activity = activity;
-        listView = new ListView(context);
+        listView = new FileView(context);
 
         statusView = (TextView) GUI.viewFromRes(R.layout.status_bar);
 
@@ -107,6 +136,7 @@ public class DirView extends LinearLayout {
 
         activity.registerForContextMenu(listView);
         listView.setAdapter(adapter);
+        listView.setOnScrollListener(this);
         setOrientation(VERTICAL);
 
         addView(statusView);
@@ -147,9 +177,15 @@ public class DirView extends LinearLayout {
             }
         }
 
-        adapter.notifyDataSetChanged();
         statusView.setText(directory.toString());
         adapter.sort();
+        adapter.notifyDataSetChanged();
+
+        if(pathToScroll.containsKey(directory.getAbsolutePath())){
+            ScrollPosition scrollPosition = pathToScroll.get(directory.getAbsolutePath());
+            //scrollPosition.restore(listView);//Intermitted!!!
+            //TODO - fix!
+        }
     }
 
     public void setDirectory(String directory) {
@@ -340,6 +376,18 @@ public class DirView extends LinearLayout {
         for (DirElement dirElement : adapter.elements) {
             dirElement.setFile(new File(directory, dirElement.getFile().getName()));
         }
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        if (scrollState == SCROLL_STATE_IDLE) {
+            String path = directory.getAbsolutePath();
+            pathToScroll.put(path, new ScrollPosition(listView));
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
     }
 }
 
