@@ -72,7 +72,6 @@ public class MainActivity extends Activity {
         } else {
             dir = rootSd;
         }
-        Q.out(dir);
 
         activeDirView = new DirView(this, dir);
         setContentView(activeDirView);
@@ -154,7 +153,7 @@ public class MainActivity extends Activity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    void startNewActivity(Class<?> cls){
+    void startNewActivity(Class<?> cls) {
         Intent intent = new Intent(this, cls);
         startActivity(intent);
     }
@@ -181,7 +180,6 @@ public class MainActivity extends Activity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        Q.out(menu);
         super.onCreateContextMenu(menu, v, menuInfo);
         activeDirView.handleContextMenu(menu, v, menuInfo);
     }
@@ -206,10 +204,11 @@ public class MainActivity extends Activity {
             case CALC_SIZE:
                 activeDirView.calcFolderSize(itemIndex);
                 break;
+            case OPEN_FOLDER_IN_OTHER:
+                activeDirView.openFolderInOtherApp(itemIndex);
+                break;
         }
 
         return true;
     }
-
-
 }

@@ -24,7 +24,9 @@ package com.kciray.android.filemanager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
@@ -240,18 +242,13 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         });
     }
 
-
     public void handleContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             DirElement element = adapter.getItem(info.position);
-            if (element.isBackButton()) {
-                File file = element.getFile();
-                showActionsForFile(file, menu);
-            } else {
-                File file = element.getFile();
-                showActionsForFile(file, menu);
-            }
+
+            File file = element.getFile();
+            showActionsForFile(file, menu);
         }
     }
 
@@ -280,6 +277,9 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         if ((file != null) && (file.isDirectory())) {
             menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
                     Menu.NONE, "Подсчитать размер папки");
+
+            menu.add(Menu.NONE, FileMenu.OPEN_FOLDER_IN_OTHER.ordinal(),
+                    Menu.NONE, "Открыть папку в другой программе");
         }
     }
 
@@ -341,6 +341,18 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         });
     }
 
+    public void openFolderInOtherApp(int position) {
+        final DirElement dirElement = adapter.getItem(position);
+        File dir = dirElement.getFile();
+
+        /*
+        Intent intentForOpenDirectory = new Intent();
+        intentForOpenDirectory.setDataAndType(Uri.fromFile(dir), "file/*");
+        intentForOpenDirectory.addCategory(Intent.CATEGORY_DEFAULT);
+        Q.out(Uri.fromFile(dir));
+        context.startActivity(intentForOpenDirectory);*/
+    }
+
     boolean recursiveDelete(File f) {
         if (f.isDirectory()) {
             File[] listFiles = f.listFiles();
@@ -388,6 +400,8 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
     }
+
+
 }
 
 class DirViewAdapter extends BaseAdapter {
@@ -434,7 +448,7 @@ class DirViewAdapter extends BaseAdapter {
         SharedPreferences mainPref = MainActivity.getInstance().getMainPref();
         String name = MainActivity.getInstance().getResources().getString(R.string.autoSort);
         boolean autoSort = mainPref.getBoolean(name, true);
-        if(autoSort){
+        if (autoSort) {
             sort();
         }
     }
