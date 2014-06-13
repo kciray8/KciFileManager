@@ -21,24 +21,34 @@
 
 package com.kciray.android.filemanager;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.TextView;
 
-import com.kciray.Q;
 import com.kciray.android.Common;
+import com.kciray.android.commons.gui.KciNavDrawer;
+import com.kciray.android.commons.sys.Global;
 
-public class MainActivity extends Activity {
+import java.io.File;
+
+public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories> {
     DirView activeDirView;
+
+    enum DrawerCategories {SYSTEM, BOOKMARKS, LOL}
 
     public SharedPreferences getMainPref() {
         return mainPref;
@@ -55,10 +65,12 @@ public class MainActivity extends Activity {
     }
 
     static MainActivity mainActivity;
+    KciNavDrawer<DrawerCategories> navDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Global.context = this;
         mainActivity = this;
         mainPref = PreferenceManager.getDefaultSharedPreferences(this);
         Common.setContext(this);
@@ -74,8 +86,85 @@ public class MainActivity extends Activity {
         }
 
         activeDirView = new DirView(this, dir);
-        setContentView(activeDirView);
+
+        navDrawer = new KciNavDrawer<>(this);
+        navDrawer.setMainContent(activeDirView);
+        navDrawer.registerOnClickItemListener(this);
+        navDrawer.addCategory(DrawerCategories.SYSTEM, R.string.cat_system);
+        navDrawer.addCategory(DrawerCategories.BOOKMARKS, R.string.cat_bookmarks);
+
+        File root = new File("/");
+        navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
+                getIVBookmark(this.getStr(R.string.root), root.getAbsolutePath()), root);
+
+        File sdCard = Environment.getExternalStorageDirectory();
+        navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
+                getIVBookmark(this.getStr(R.string.sd_card), sdCard.getAbsolutePath()), sdCard);
+
+        drawerToggle = navDrawer.addButtonToActivity(this);
+        setContentView(navDrawer);
     }
+
+    @Override
+    public void onClickItem(int categoryId, Object data) {
+        DrawerCategories categories = DrawerCategories.values()[categoryId];
+
+
+        switch (categories) {
+            case BOOKMARKS:
+            case SYSTEM:
+                final File bookmarkFile = (File) data;
+                activeDirView.goToDir(bookmarkFile);
+
+                //TODO - file operation IN OTHER THREAD!!!
+                Handler handler = new Handler(getBaseContext().getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        navDrawer.closeDrawers();
+                    }
+                });
+
+                break;
+        }
+
+    }
+
+    private View getIVBookmark(String title, String description) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View infoView = inflater.inflate(R.layout.drawer_bookmark, null);
+        TextView labelView = (TextView) infoView.findViewById(R.id.label);
+        labelView.setText(title);
+        TextView descView = (TextView) infoView.findViewById(R.id.description);
+        descView.setText(description);
+
+        return infoView;
+    }
+
+    /*  Buttons for Drawer in ActionBar */
+    private ActionBarDrawerToggle drawerToggle;
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    /*/  Buttons for Drawer in ActionBar /*/
 
     @Override
     protected void onDestroy() {
@@ -203,9 +292,6 @@ public class MainActivity extends Activity {
                 break;
             case CALC_SIZE:
                 activeDirView.calcFolderSize(itemIndex);
-                break;
-            case OPEN_FOLDER_IN_OTHER:
-                activeDirView.openFolderInOtherApp(itemIndex);
                 break;
         }
 

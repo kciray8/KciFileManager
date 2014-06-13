@@ -22,7 +22,7 @@
         a:layout_height="wrap_content"
         a:layout_width="wrap_content"
         a:textStyle="bold"
-        a:textColor="#ff2f3774"
+        a:textColor="@color/text"
         a:lines="1"
         a:layout_centerVertical="true"
         a:layout_toRightOf="@+id/icon"

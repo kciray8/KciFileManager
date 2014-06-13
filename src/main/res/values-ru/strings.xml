@@ -18,4 +18,9 @@
     <string name="up">Вверх</string>
     <string name="ok">Хорошо</string>
     <string name="cancel">Закрыть</string>
+    <string name="cat_system">СИСТЕМА</string>
+    <string name="cat_bookmarks">ЗАКЛАДКИ</string>
+
+
+
 </resources>

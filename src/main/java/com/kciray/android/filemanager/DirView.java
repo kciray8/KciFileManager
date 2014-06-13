@@ -124,8 +124,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
                         dirElementFile.listFiles();
 
                         if (dirElementFile.listFiles() != null) {
-                            directory = dirElementFile;
-                            rebuildDir();
+                            goToDir(dirElementFile);
                         } else {
                             GUI.toast(L.tr(R.string.error_open_folder));
                         }
@@ -142,6 +141,11 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
 
         addView(statusView);
         addView(listView);
+    }
+
+    public void goToDir(File directory){
+        this.directory = directory;
+        rebuildDir();
     }
 
     public void goUp() {
@@ -277,9 +281,6 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         if ((file != null) && (file.isDirectory())) {
             menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
                     Menu.NONE, "Подсчитать размер папки");
-
-            menu.add(Menu.NONE, FileMenu.OPEN_FOLDER_IN_OTHER.ordinal(),
-                    Menu.NONE, "Открыть папку в другой программе");
         }
     }
 
@@ -339,18 +340,6 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
                 });
             }
         });
-    }
-
-    public void openFolderInOtherApp(int position) {
-        final DirElement dirElement = adapter.getItem(position);
-        File dir = dirElement.getFile();
-
-        /*
-        Intent intentForOpenDirectory = new Intent();
-        intentForOpenDirectory.setDataAndType(Uri.fromFile(dir), "file/*");
-        intentForOpenDirectory.addCategory(Intent.CATEGORY_DEFAULT);
-        Q.out(Uri.fromFile(dir));
-        context.startActivity(intentForOpenDirectory);*/
     }
 
     boolean recursiveDelete(File f) {

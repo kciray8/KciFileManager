@@ -21,4 +21,4 @@
 
 package com.kciray.android.filemanager;
 
-public enum FileMenu {DELETE, PROPERTIES, RENAME, CALC_SIZE, OPEN_FOLDER_IN_OTHER}
+public enum FileMenu {DELETE, PROPERTIES, RENAME, CALC_SIZE}

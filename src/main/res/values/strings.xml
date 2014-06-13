@@ -20,4 +20,9 @@
     <string name="up">Up</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="cat_system">SYSTEM</string>
+    <string name="cat_bookmarks">BOOKMARKS</string>
+
+    <string name="root">root</string>
+    <string name="sd_card">SD card</string>
 </resources>
