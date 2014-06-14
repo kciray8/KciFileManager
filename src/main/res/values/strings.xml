@@ -26,4 +26,5 @@
     <string name="root">Root</string>
     <string name="sd_card">SD card</string>
     <string name="internal_dir">Internal dir</string>
+    <string name="addBookmark">Add bookmark</string>
 </resources>

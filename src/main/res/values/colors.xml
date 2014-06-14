@@ -4,5 +4,6 @@
     <color name="text">#ff2f3774</color>
     <color name="gray1">#ff929292</color>
     <color name="gray2">#ffbababa</color>
+    <color name="gray3">#ffececec</color>
 
 </resources>

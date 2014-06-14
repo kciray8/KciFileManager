@@ -1,0 +1,23 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/footer"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/gray3"
+    android:clickable="true"
+    android:layout_alignParentBottom="true">
+
+    <ImageButton
+        android:id="@+id/imageButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/smallMargin"
+        android:paddingRight="@dimen/smallMargin"
+        android:paddingTop="@dimen/smallMargin"
+        android:paddingBottom="@dimen/smallMargin"
+
+        android:src="@drawable/ic_action_important"
+        android:background="?android:selectableItemBackground"
+        android:layout_alignParentRight="true"
+        />
+</RelativeLayout>

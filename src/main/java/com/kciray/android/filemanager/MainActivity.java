@@ -101,17 +101,14 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         navDrawer.addCategory(DrawerCategories.BOOKMARKS, R.string.cat_bookmarks);
 
         File root = new File("/");
-        navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
-                getIVBookmark(this.getStr(R.string.root), root.getAbsolutePath()), root);
+        addElementToCategory(DrawerCategories.SYSTEM, R.string.root, root);
 
         File sdCard = Environment.getExternalStorageDirectory();
-        navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
-                getIVBookmark(this.getStr(R.string.sd_card), sdCard.getAbsolutePath()), sdCard);
+        addElementToCategory(DrawerCategories.SYSTEM, R.string.sd_card, sdCard);
 
         if (devMode) {
             File internalDir = App.getInternalDir();
-            navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
-                    getIVBookmark(this.getStr(R.string.internal_dir), internalDir.getAbsolutePath()), internalDir);
+            addElementToCategory(DrawerCategories.SYSTEM, R.string.internal_dir, internalDir);
         }
 
         drawerToggle = navDrawer.addButtonToActivity(this);
@@ -121,6 +118,10 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
 
     private void setDefaultPrefForActive() {
         mainPref.edit().putBoolean(getStr(R.string.devMode), false).commit();
+    }
+    public void addElementToCategory(DrawerCategories category, int titleRes, File file){
+        navDrawer.addInfoViewToCategory(category,
+                getIVBookmark(this.getStr(titleRes), file.getAbsolutePath()), file);
     }
 
     @Override

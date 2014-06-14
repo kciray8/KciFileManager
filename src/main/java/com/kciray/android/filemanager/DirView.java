@@ -34,6 +34,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
@@ -75,7 +76,7 @@ class ScrollPosition {
     }
 }
 
-public class DirView extends LinearLayout implements AbsListView.OnScrollListener {
+public class DirView extends RelativeLayout implements AbsListView.OnScrollListener {
     public File getDirectory() {
         return directory;
     }
@@ -135,10 +136,17 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         activity.registerForContextMenu(listView);
         listView.setAdapter(adapter);
         listView.setOnScrollListener(this);
-        setOrientation(VERTICAL);
 
-        addView(statusView);
-        addView(listView);
+        LinearLayout statusAndList = new LinearLayout(context);
+        statusAndList.setOrientation(LinearLayout.VERTICAL);
+        statusAndList.addView(statusView);
+        statusAndList.addView(listView);
+        addView(statusAndList);
+
+        View bottomBar = ViewUtils.viewFromRes(R.layout.bottom_bar);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        addView(bottomBar, lp);
     }
 
     public void goToDir(File directory){
