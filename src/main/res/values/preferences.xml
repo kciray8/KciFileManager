@@ -2,7 +2,9 @@
     <!-- To preference framework -->
     <string name="autoSort">autoSort</string>
     <string name="autoSaveLastDir">autoSaveLastDir</string>
+    <string name="devMode">devMode</string>
     
     <!-- Non GUI -->
     <string name="autoSaveLastDirStr">autoSaveLastDirStr</string>
+    <string name="firstLaunch">firstLaunch</string>
 </resources>

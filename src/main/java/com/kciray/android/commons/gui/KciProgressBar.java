@@ -19,10 +19,27 @@
  **
  *****************************************************************************/
 
-package com.kciray.android;
+package com.kciray.android.commons.gui;
 
-public class L {
-    public static String tr(int resId) {
-        return Common.getContext().getString(resId);
+import android.content.Context;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+public class KciProgressBar extends LinearLayout{
+    ProgressBar progressBar;
+    TextView textView;
+
+    public KciProgressBar(Context context, String text) {
+        super(context);
+        progressBar = new ProgressBar(context);
+        addView(progressBar);
+
+        textView = new TextView(context);
+        textView.setText(text);
+        textView.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        addView(textView);
     }
 }

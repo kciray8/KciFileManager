@@ -39,13 +39,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.kciray.android.Common;
+import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
+import com.kciray.android.commons.sys.App;
 import com.kciray.android.commons.sys.Global;
 
 import java.io.File;
 
-public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories> {
+public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>, SharedPreferences.OnSharedPreferenceChangeListener {
     DirView activeDirView;
 
     enum DrawerCategories {SYSTEM, BOOKMARKS, LOL}
@@ -66,6 +67,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
 
     static MainActivity mainActivity;
     KciNavDrawer<DrawerCategories> navDrawer;
+    boolean devMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +75,11 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         Global.context = this;
         mainActivity = this;
         mainPref = PreferenceManager.getDefaultSharedPreferences(this);
-        Common.setContext(this);
+        boolean firstLaunch = mainPref.getBoolean(getStr(R.string.firstLaunch), true);
+        if (firstLaunch) {
+            setDefaultPrefForActive();
+            mainPref.edit().putBoolean(getStr(R.string.firstLaunch), false).commit();
+        }
 
         String rootSd = Environment.getExternalStorageDirectory().getPath();
         String dir;
@@ -85,6 +91,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             dir = rootSd;
         }
 
+        devMode = mainPref.getBoolean(getStr(R.string.devMode), false);
         activeDirView = new DirView(this, dir);
 
         navDrawer = new KciNavDrawer<>(this);
@@ -101,8 +108,19 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
                 getIVBookmark(this.getStr(R.string.sd_card), sdCard.getAbsolutePath()), sdCard);
 
+        if (devMode) {
+            File internalDir = App.getInternalDir();
+            navDrawer.addInfoViewToCategory(DrawerCategories.SYSTEM,
+                    getIVBookmark(this.getStr(R.string.internal_dir), internalDir.getAbsolutePath()), internalDir);
+        }
+
         drawerToggle = navDrawer.addButtonToActivity(this);
         setContentView(navDrawer);
+        mainPref.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private void setDefaultPrefForActive() {
+        mainPref.edit().putBoolean(getStr(R.string.devMode), false).commit();
     }
 
     @Override
@@ -296,5 +314,18 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         }
 
         return true;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getStr(R.string.devMode))) {
+            DialogUtils.askQuestion("Требуется перезапуск!", "Изменения будут доступны только после перезапуска. Перезапустить приложение сейчас?",
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            App.restart();
+                        }
+                    });
+        }
     }
 }

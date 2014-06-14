@@ -1,6 +1,5 @@
 package com.kciray.android.commons.gui;
 
-import android.util.Log;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -8,9 +7,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-
-import com.kciray.Q;
-import com.kciray.android.filemanager.MainActivity;
 
 public class ListViewUtils {
     public static void fitHeight(ListView listView) {

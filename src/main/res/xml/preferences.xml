@@ -12,4 +12,10 @@
         a:summary="Сохранять последнюю рабочую папку при закрытии и открывать при включении"
         a:defaultValue="true"
         a:key="@string/autoSaveLastDir" />
+
+    <CheckBoxPreference
+        a:title="Режим разработчика"
+        a:summary="Показать дополнительные пункты меню"
+        a:key="@string/devMode" />
+
 </PreferenceScreen>

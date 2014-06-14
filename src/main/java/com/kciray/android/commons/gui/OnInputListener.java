@@ -19,7 +19,7 @@
  **
  *****************************************************************************/
 
-package com.kciray.android;
+package com.kciray.android.commons.gui;
 
 public interface OnInputListener {
     public void onInput(String str);

@@ -27,9 +27,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.kciray.android.L;
-import com.kciray.android.OnInputListener;
-import com.kciray.android.gui.GUI;
+import com.kciray.android.commons.gui.DialogUtils;
+import com.kciray.android.commons.sys.L;
+import com.kciray.android.commons.gui.OnInputListener;
 
 import java.io.File;
 import java.util.Comparator;
@@ -79,7 +79,7 @@ public class DirElement {
     }
 
     public void rename() {
-        GUI.inputString("Введите новое имя", file.getName(), new OnInputListener() {
+        DialogUtils.inputString("Введите новое имя", file.getName(), new OnInputListener() {
             @Override
             public void onInput(String str) {
                 File oldFile = file;
@@ -89,12 +89,12 @@ public class DirElement {
                     file = newFile;
                     if (!isBackButton()) {
                         pathText.setText(str);
-                    }else{
+                    } else {
                         FileScanner.deleteFromCache(oldFile);
                         dirView.updateRootDirectory(file);
                     }
                 } else {
-                    GUI.toast("Ошибка при переименовании файла");
+                    DialogUtils.toast("Ошибка при переименовании файла");
                 }
             }
         });

@@ -19,20 +19,10 @@
  **
  *****************************************************************************/
 
-package com.kciray;
+package com.kciray.android.commons.sys;
 
-import android.util.Log;
-
-public class Q {
-    public static void out(String str) {
-        Log.d("Q.out", str);
-    }
-
-    public static void out(Object obj) {
-        if (obj != null) {
-            Log.d("Q.out", obj.toString());
-        } else {
-            Log.d("Q.out", "NULL!!!");
-        }
+public class L {
+    public static String tr(int resId) {
+        return Global.context.getString(resId);
     }
 }

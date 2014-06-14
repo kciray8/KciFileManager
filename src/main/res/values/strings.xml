@@ -23,6 +23,7 @@
     <string name="cat_system">SYSTEM</string>
     <string name="cat_bookmarks">BOOKMARKS</string>
 
-    <string name="root">root</string>
+    <string name="root">Root</string>
     <string name="sd_card">SD card</string>
+    <string name="internal_dir">Internal dir</string>
 </resources>

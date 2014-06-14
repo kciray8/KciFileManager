@@ -24,9 +24,7 @@ package com.kciray.android.filemanager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
@@ -38,12 +36,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.kciray.Q;
-import com.kciray.android.Common;
-import com.kciray.android.L;
-import com.kciray.android.OnInputListener;
+import com.kciray.android.commons.gui.DialogUtils;
+import com.kciray.android.commons.gui.ViewUtils;
+import com.kciray.android.commons.io.Q;
+import com.kciray.android.commons.sys.L;
+import com.kciray.android.commons.gui.OnInputListener;
 import com.kciray.android.commons.io.FileUtils;
-import com.kciray.android.gui.GUI;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,7 +101,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         this.activity = activity;
         listView = new FileView(context);
 
-        statusView = (TextView) GUI.viewFromRes(R.layout.status_bar);
+        statusView = (TextView) ViewUtils.viewFromRes(R.layout.status_bar);
 
         setDirectory(dir);
 
@@ -126,7 +124,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
                         if (dirElementFile.listFiles() != null) {
                             goToDir(dirElementFile);
                         } else {
-                            GUI.toast(L.tr(R.string.error_open_folder));
+                            DialogUtils.toast(L.tr(R.string.error_open_folder));
                         }
                     }
                 }
@@ -198,7 +196,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
     }
 
     public void addNewFolder() {
-        GUI.inputString(L.tr(R.string.enter_name_new_folder), new OnInputListener() {
+        DialogUtils.inputString(L.tr(R.string.enter_name_new_folder), new OnInputListener() {
             @Override
             public void onInput(String str) {
                 File newFile = new File(directory, str);
@@ -229,7 +227,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
     }
 
     public void addNewFile() {
-        GUI.inputString(L.tr(R.string.enter_name_new_file), new OnInputListener() {
+        DialogUtils.inputString(L.tr(R.string.enter_name_new_file), new OnInputListener() {
             @Override
             public void onInput(String str) {
                 File newFile = new File(directory, str);
@@ -288,7 +286,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         final DirElement dirElement = adapter.getItem(position);
         String fileName = dirElement.getFile().getName();
 
-        GUI.askQuestion(L.tr(R.string.confirm), String.format(L.tr(R.string.confirm_delete_file), fileName),
+        DialogUtils.askQuestion(L.tr(R.string.confirm), String.format(L.tr(R.string.confirm_delete_file), fileName),
                 new Runnable() {
                     @Override
                     public void run() {
@@ -299,7 +297,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
                         if (success) {
                             dynamicallyRemoveDirElement(dirElement);
                         } else {
-                            GUI.toast(L.tr(R.string.error_delete_file));
+                            DialogUtils.toast(L.tr(R.string.error_delete_file));
                         }
                     }
                 });
@@ -315,16 +313,20 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         }
     }
 
+    public static void runParallel(Runnable runnable) {
+        new Thread(runnable).start();
+    }
+
     public void calcFolderSize(int position) {
         final DirElement dirElement = adapter.getItem(position);
         File file = dirElement.getFile();
         boolean isRoot = file.getAbsolutePath().equals("/");
         String dirName = isRoot ? "/" : dirElement.getFile().getName();
 
-        final ProgressDialog progressDialog = GUI.showProgressDialog(
+        final ProgressDialog progressDialog = DialogUtils.showProgressDialog(
                 "Подсчёт размера для папки " + dirName);
 
-        Common.runParallel(new Runnable() {
+        runParallel(new Runnable() {
             @Override
             public void run() {
                 final long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
@@ -334,7 +336,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
                     @Override
                     public void run() {
                         progressDialog.cancel();
-                        GUI.showMessage("Размер директории:", strSize);
+                        DialogUtils.showMessage("Размер директории:", strSize);
                         dirElement.setFileSize(dirSize);
                     }
                 });
@@ -356,7 +358,7 @@ public class DirView extends LinearLayout implements AbsListView.OnScrollListene
         DirElement dirElement = adapter.getItem(position);
 
         String message = L.tr(R.string.size) + " = " + dirElement.getFile().length() + " " + L.tr(R.string.bytes);
-        GUI.showMessage(L.tr(R.string.action_properties), message);
+        DialogUtils.showMessage(L.tr(R.string.action_properties), message);
     }
 
     public void renameItem(int itemIndex) {
