@@ -6,10 +6,9 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -17,25 +16,24 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.kciray.android.filemanager.MainActivity;
 import com.kciray.android.filemanager.R;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
-    public OnItemClick onItemClickListener;
+    private static int fullWidth = 240;//dp
+
+    private OnItemClick onItemClickListener;
+    private FrameLayout contentLayout;
+    private ListView listView;
+    private Context context;
+    private DrawerMainAdapter adapter = new DrawerMainAdapter();
 
     public interface OnItemClick<Category extends Enum> {
         void onClickItem(int categoryId, Object data);
     }
 
-    private FrameLayout contentLayout;
-    private ListView listView;
-    private Context context;
-    DrawerMainAdapter adapter = new DrawerMainAdapter();
-
-    //TODO fix height overflow
     public KciNavDrawer(Context context) {
         super(context);
         this.context = context;
@@ -44,7 +42,7 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
 
         listView = new ListView(context);
         DrawerLayout.LayoutParams lp = new DrawerLayout.LayoutParams(
-                Metric.dpToPx(240), LinearLayout.LayoutParams.MATCH_PARENT);
+                Metric.dpToPx(fullWidth), LinearLayout.LayoutParams.MATCH_PARENT);
 
         lp.gravity = GravityCompat.START;
 
@@ -52,6 +50,15 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
         listView.setBackgroundColor(0xffe0e0e0);
         listView.setDivider(null);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                DrawerElement element = (DrawerElement) adapter.getItem(position);
+                if (element.type == DrawerElement.Type.ELEMENT) {
+                    onItemClickListener.onClickItem(element.categoryCode, element.data);
+                }
+            }
+        });
         addView(listView);
 
         Hacks.setMarginForDrawerLayoutSubclass(this, 3);
@@ -101,71 +108,40 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
     public void addCategory(Category category, int stringNameId) {
         String nameCategory = context.getString(stringNameId);
 
-        DrawerMainElement categoryElement = DrawerMainElement.getCategory(context,
+        DrawerElement categoryElement = DrawerElement.getCategory(context,
                 nameCategory, category.ordinal());
         categoryElement.onItemClickListener = onItemClickListener;
 
-        adapter.addElement(categoryElement);
+        adapter.addElement(categoryElement, context);
     }
 
     public void addInfoViewToCategory(Category category, View infoView, Object data) throws IllegalArgumentException {
-        DrawerSecondaryElement secondaryElement = DrawerSecondaryElement.getInfoItem(context, infoView, data, category);
+        DrawerElement drawerElement = DrawerElement.getElement(category.ordinal(), infoView, data);
 
-        DrawerMainElement containerElement = null;
-        for (DrawerMainElement mainElement : adapter.mainElements) {
-            if (mainElement.categoryCode == category.ordinal()) {
-                containerElement = mainElement;
-                break;
-            }
-        }
-        if (containerElement != null) {
-            containerElement.secondaryAdapter.addElement(secondaryElement);
-            containerElement.secondaryAdapter.notifyDataSetChanged();
-            adapter.notifyDataSetChanged();
-            requestLayout();
-
-            containerElement.updateSize();
-
-        } else {
-            throw new IllegalArgumentException("Element for this category not exist!");
-        }
+        adapter.addElement(drawerElement, context);
     }
 
     public void deleteViewFromCategory(Category category, Object data) {
-        DrawerMainElement containerElement = null;
-        for (DrawerMainElement mainElement : adapter.mainElements) {
-            if (mainElement.categoryCode == category.ordinal()) {
-                containerElement = mainElement;
-                break;
-            }
-        }
-        if (containerElement != null) {
-            containerElement.secondaryAdapter.deleteElementEquData(data);
-            containerElement.secondaryAdapter.notifyDataSetChanged();
-            adapter.notifyDataSetChanged();
-            containerElement.updateSize();
-        } else {
-            throw new IllegalArgumentException("Element for this category not exist!");
-        }
+        adapter.deleteElementEquData(data, category.ordinal());
     }
 
     public void addRawView(View rawView) {
-        DrawerMainElement rawViewElement = DrawerMainElement.getRawView(context, rawView);
-        adapter.addElement(rawViewElement);
+        DrawerElement rawViewElement = DrawerElement.getRawView(context, rawView);
+        adapter.addElement(rawViewElement, context);
     }
 }
 
 class DrawerMainAdapter extends BaseAdapter {
-    List<DrawerMainElement> mainElements = new LinkedList<>();
+    List<DrawerElement> elements = new LinkedList<>();
 
     @Override
     public int getCount() {
-        return mainElements.size();
+        return elements.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return mainElements.get(position);
+        return elements.get(position);
     }
 
     @Override
@@ -175,155 +151,152 @@ class DrawerMainAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return mainElements.get(position).view;
+        return elements.get(position).view;
     }
 
-    public void addElement(DrawerMainElement element) {
-        mainElements.add(element);
+    public void addElement(DrawerElement element, Context context) {
+        if (element.isCategory()) {
+            if (elements.size() != 0) {
+                DrawerElement empty = DrawerElement.getEmptyElement(25, context);
+                elements.add(empty);
+            }
+            elements.add(element);
+        } else {
+            int categoryCode = element.categoryCode;
+            int lastCategoryPos = -1;
+            DrawerElement lastElement = null;
+            for (DrawerElement drawerElement : elements) {
+                if (drawerElement.categoryCode == categoryCode) {
+                    lastCategoryPos = elements.indexOf(drawerElement);
+                    lastElement = drawerElement;
+                }
+            }
+            if (lastElement != null) {
+                //Add after element - we need insert separator
+                if (!lastElement.isCategory()) {
+                    DrawerElement separator = DrawerElement.getSeparator(context, 0xFFCFCFCF, 0.5F, Metric.dpToPx(15));
+                    element.topSeparator = separator;
+                    separator.linkedElement = element;
+                    elements.add(lastCategoryPos + 1, separator);
+                    lastCategoryPos++;
+                }
+
+                elements.add(lastCategoryPos + 1, element);
+            }
+        }
+
+        notifyDataSetChanged();
     }
 
     @Override
     public boolean isEnabled(int position) {
-        DrawerMainElement element = mainElements.get(position);
+        DrawerElement element = elements.get(position);
         if (element.isCategory()) {
             return false;
         } else {
             return true;
         }
     }
+
+    public void deleteElementEquData(Object data, int categoryId) {
+        for (DrawerElement element : elements) {
+            if ((element.categoryCode == categoryId) && (element.data != null)) {
+                if (element.data.equals(data)) {
+                    elements.remove(element);
+                    break;
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
 }
 
-class DrawerMainElement {
-    private boolean mCategory;
-    ListView secondaryElementsList;
-    DrawerSecondaryAdapter secondaryAdapter;
+class DrawerElement {
+    enum Type {CATEGORY, ELEMENT, EMPTY, SEPARATOR}
+
+    Type type = Type.ELEMENT;
+
     int categoryCode = -1;
     View view;
-    public KciNavDrawer.OnItemClick onItemClickListener;
+    Object data;
+    DrawerElement topSeparator;
+    DrawerElement linkedElement;
+    KciNavDrawer.OnItemClick onItemClickListener;
 
-    private DrawerMainElement() {
+    private DrawerElement() {
 
     }
 
-    private DrawerMainElement(Context context, int categoryCode) {
+    private DrawerElement(int categoryCode) {
         this.categoryCode = categoryCode;
-        mCategory = true;
-        secondaryElementsList = new ListView(context);
-        secondaryElementsList.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        secondaryElementsList.setDivider(context.getResources().getDrawable(R.layout.list_divider));
-        secondaryAdapter = new DrawerSecondaryAdapter();
-        secondaryElementsList.setAdapter(secondaryAdapter);
-        secondaryElementsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                DrawerSecondaryElement element = (DrawerSecondaryElement) secondaryAdapter.getItem(position);
-                onItemClickListener.onClickItem(element.categoryId, element.data);
-            }
-        });
-        updateSize();
+        type = Type.CATEGORY;
     }
 
-    public static DrawerMainElement getCategory(Context context, String title, int categoryCode) {
-        LayoutInflater inflater = (LayoutInflater) MainActivity.getInstance().
-                getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
+    static DrawerElement getCategory(Context context, String title, int categoryCode) {
         LinearLayout mainLayout = new LinearLayout(context);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
         TextView textView = new TextView(context);
         textView.setText(title);
         textView.setPadding(Metric.dpToPx(15), 0, 0, 0);
         mainLayout.addView(textView);
+        mainLayout.addView(getSeparatorView(context, Color.LTGRAY, 2, 0));
 
-        View separatorView = new View(context);
-        separatorView.setBackgroundColor(Color.LTGRAY);
-        int someDP = Metric.dpToPx(2);
-        separatorView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, someDP));
-        mainLayout.addView(separatorView);
-
-        DrawerMainElement element = new DrawerMainElement(context, categoryCode);
-        element.updateSize();
-        mainLayout.addView(element.secondaryElementsList);
-        mainLayout.setPadding(0, 0, 0, Metric.dpToPx(25));
+        DrawerElement element = new DrawerElement(categoryCode);
         element.view = mainLayout;
 
         return element;
     }
 
-    public void updateSize() {
-        ListViewUtils.fitHeight(secondaryElementsList);
+    private static View getSeparatorView(Context context, int color, float height, int padding) {
+        LinearLayout mainLayout = new LinearLayout(context);
+        mainLayout.setBackgroundColor(color);
+        int someDP = Metric.dpToPx(height);
+        mainLayout.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, someDP));
+
+        return mainLayout;
     }
 
-    public View getView() {
+    static DrawerElement getSeparator(Context context, int color, float height, int padding) {
+        DrawerElement element = new DrawerElement();
+        element.type = Type.SEPARATOR;
+        View sepView = getSeparatorView(context, color, height, padding);
+        element.view = sepView;
+        return element;
+    }
+
+
+    static DrawerElement getElement(int categoryCode, View view, Object data) {
+        DrawerElement element = new DrawerElement();
+        element.view = view;
+        element.data = data;
+        element.categoryCode = categoryCode;
+
+        return element;
+    }
+
+    static DrawerElement getEmptyElement(int height, Context context) {
+        DrawerElement element = new DrawerElement();
+        element.type = Type.EMPTY;
+
+        LinearLayout mainLayout = new LinearLayout(context);
+        mainLayout.setPadding(0, 0, 0, Metric.dpToPx(height));
+        element.view = mainLayout;
+
+        return element;
+    }
+
+    View getView() {
         return view;
     }
 
     boolean isCategory() {
-        return mCategory;
+        return type == Type.CATEGORY;
     }
 
-    public static DrawerMainElement getRawView(Context context, View rawView) {
-        DrawerMainElement element = new DrawerMainElement();
+    static DrawerElement getRawView(Context context, View rawView) {
+        DrawerElement element = new DrawerElement();
         element.view = rawView;
 
         return element;
-    }
-}
-
-class DrawerSecondaryAdapter extends BaseAdapter {
-    List<DrawerSecondaryElement> secondaryElements = new LinkedList<>();
-
-    @Override
-    public int getCount() {
-        return secondaryElements.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return secondaryElements.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        return secondaryElements.get(position).view;
-    }
-
-    public void addElement(DrawerSecondaryElement element) {
-        secondaryElements.add(element);
-    }
-
-    public void deleteElementEquData(Object data) {
-        for (DrawerSecondaryElement secondaryElement : secondaryElements) {
-            if(secondaryElement.data.equals(data)){
-                secondaryElements.remove(secondaryElement);
-                return;
-            }
-        }
-    }
-}
-
-class DrawerSecondaryElement {
-    View view;
-    Object data;
-    int categoryId;
-
-    private DrawerSecondaryElement() {
-    }
-
-    public static DrawerSecondaryElement getInfoItem(Context context, View infoView, Object data, Enum category) {
-        DrawerSecondaryElement element = new DrawerSecondaryElement();
-        element.view = infoView;
-        element.data = data;
-        element.categoryId = category.ordinal();
-
-        return element;
-    }
-
-    public View getView() {
-        return view;
     }
 }
