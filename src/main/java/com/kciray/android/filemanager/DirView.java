@@ -24,6 +24,7 @@ package com.kciray.android.filemanager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -32,17 +33,18 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
+import com.kciray.android.commons.gui.OnInputListener;
 import com.kciray.android.commons.gui.ViewUtils;
+import com.kciray.android.commons.io.FileUtils;
 import com.kciray.android.commons.io.Q;
 import com.kciray.android.commons.sys.L;
-import com.kciray.android.commons.gui.OnInputListener;
-import com.kciray.android.commons.io.FileUtils;
+import com.kciray.android.commons.sys.LBroadManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +78,7 @@ class ScrollPosition {
     }
 }
 
-public class DirView extends RelativeLayout implements AbsListView.OnScrollListener {
+public class DirView extends FrameLayout implements AbsListView.OnScrollListener {
     public File getDirectory() {
         return directory;
     }
@@ -93,6 +95,13 @@ public class DirView extends RelativeLayout implements AbsListView.OnScrollListe
     private TextView statusView;
     Activity activity;
     DirElement backNavElement;
+    View mainLayout;
+
+    public ImageButton getAddBookmarkButton() {
+        return addBookmarkButton;
+    }
+
+    private ImageButton addBookmarkButton;
 
     static Map<String, ScrollPosition> pathToScroll = new HashMap<>();
 
@@ -100,9 +109,10 @@ public class DirView extends RelativeLayout implements AbsListView.OnScrollListe
         super(activity);
         this.context = activity;
         this.activity = activity;
-        listView = new FileView(context);
 
-        statusView = (TextView) ViewUtils.viewFromRes(R.layout.status_bar);
+        mainLayout = ViewUtils.viewFromRes(R.layout.main_layout);
+        listView = (FileView) mainLayout.findViewById(R.id.fileView);
+        statusView = (TextView) mainLayout.findViewById(R.id.status_view);
 
         setDirectory(dir);
 
@@ -129,35 +139,54 @@ public class DirView extends RelativeLayout implements AbsListView.OnScrollListe
                         }
                     }
                 }
-
             }
         });
 
         activity.registerForContextMenu(listView);
         listView.setAdapter(adapter);
         listView.setOnScrollListener(this);
+        addView(mainLayout);
 
-        LinearLayout statusAndList = new LinearLayout(context);
-        statusAndList.setOrientation(LinearLayout.VERTICAL);
-        statusAndList.addView(statusView);
-        statusAndList.addView(listView);
-        addView(statusAndList);
-
-        View bottomBar = ViewUtils.viewFromRes(R.layout.bottom_bar);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        addView(bottomBar, lp);
+        View bottomBar = mainLayout.findViewById(R.id.bottom_bar);
+        addBookmarkButton = (ImageButton) bottomBar.findViewById(R.id.add_bookmark_button);
+        BookmarkManager.getInstance().setAddBookmarkButton(addBookmarkButton);
+        addBookmarkButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (BookmarkManager.getInstance().getBookmark(directory.getAbsolutePath()) == null) {
+                    DialogUtils.inputString(L.tr(R.string.input_bookmark_name), directory.getName(),
+                            new OnInputListener() {
+                                @Override
+                                public void onInput(String str) {
+                                    Intent addNewBookmark = new Intent(BookmarkManager.ADD_NEW_BOOKMARK);
+                                    addNewBookmark.putExtra(BookmarkManager.BOOKMARK_LABEL, str);
+                                    addNewBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
+                                    LBroadManager.send(addNewBookmark);
+                                }
+                            });
+                }else{
+                    DialogUtils.askQuestion(L.tr(R.string.confirm),L.tr(R.string.delete_bookmark_q), new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
+                            delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
+                            LBroadManager.send(delBookmark);
+                        }
+                    });
+                }
+            }
+        });
     }
 
-    public void goToDir(File directory){
+    public void goToDir(File directory) {
+        BookmarkManager.getInstance().updateBookmarkButton(directory.getAbsolutePath());
         this.directory = directory;
         rebuildDir();
     }
 
     public void goUp() {
         if (directory.getParentFile() != null) {
-            directory = directory.getParentFile();
-            rebuildDir();
+            goToDir(directory.getParentFile());
         }
     }
 

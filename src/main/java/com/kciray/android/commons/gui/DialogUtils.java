@@ -16,11 +16,11 @@ public class DialogUtils {
     }
 
     public static void inputString(String title,String defaultStr, final OnInputListener okListener) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(Global.context);
+        AlertDialog.Builder alert = new AlertDialog.Builder(Global.getContext());
 
         alert.setTitle(title);
 
-        final EditText input = new EditText(Global.context);
+        final EditText input = new EditText(Global.getContext());
         if(defaultStr != null){
             input.setText(defaultStr);
         }
@@ -42,12 +42,12 @@ public class DialogUtils {
     }
 
     public static void toast(String str) {
-        Toast toast = Toast.makeText(Global.context, str, Toast.LENGTH_SHORT);
+        Toast toast = Toast.makeText(Global.getContext(), str, Toast.LENGTH_SHORT);
         toast.show();
     }
 
     public static ProgressDialog showProgressDialog(String message) {
-        ProgressDialog dialog = new ProgressDialog(Global.context);
+        ProgressDialog dialog = new ProgressDialog(Global.getContext());
         dialog.setMessage(message);
         dialog.setIndeterminate(true);
         dialog.setCancelable(false);
@@ -57,7 +57,7 @@ public class DialogUtils {
 
     public static void showMessage(String title, String message) {
         AlertDialog alertDialog;
-        alertDialog = new AlertDialog.Builder(Global.context).create();
+        alertDialog = new AlertDialog.Builder(Global.getContext()).create();
         alertDialog.setTitle(title);
         alertDialog.setMessage(message);
         alertDialog.show();
@@ -69,7 +69,7 @@ public class DialogUtils {
 
     public static void askQuestion(String title, String message,
                                    final Runnable onYes, final Runnable onNo) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(Global.context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(Global.getContext());
 
         builder.setTitle(title);
         builder.setMessage(message);

@@ -20,7 +20,9 @@
     <string name="cancel">Закрыть</string>
     <string name="cat_system">СИСТЕМА</string>
     <string name="cat_bookmarks">ЗАКЛАДКИ</string>
-
-
+    <string name="input_bookmark_name">Введите имя закладки</string>
+    <string name="add_bookmark_toast">Закладка \"%s\" успешно добавлена!</string>
+    <string name="delete_bookmark_q">Вы действительно хотите удалить закладку?</string>
+    <string name="delete_bm_success">Закладка была удалена</string>
 
 </resources>

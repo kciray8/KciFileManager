@@ -9,7 +9,7 @@ import com.kciray.android.commons.sys.Global;
 public class ViewUtils {
     public static View viewFromRes(int resId) {
         LayoutInflater inflater = (LayoutInflater)
-                Global.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                Global.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         return inflater.inflate(resId, null);
     }
 }

@@ -35,6 +35,7 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
     private Context context;
     DrawerMainAdapter adapter = new DrawerMainAdapter();
 
+    //TODO fix height overflow
     public KciNavDrawer(Context context) {
         super(context);
         this.context = context;
@@ -53,7 +54,7 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
         listView.setAdapter(adapter);
         addView(listView);
 
-        Hacks.setMarginForDrawerLayoutSubclass(this, 5);
+        Hacks.setMarginForDrawerLayoutSubclass(this, 3);
     }
 
     public void registerOnClickItemListener(OnItemClick onItemClickListener) {
@@ -119,10 +120,30 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
         }
         if (containerElement != null) {
             containerElement.secondaryAdapter.addElement(secondaryElement);
+            containerElement.secondaryAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
+            requestLayout();
+
             containerElement.updateSize();
 
-            adapter.notifyDataSetChanged();
+        } else {
+            throw new IllegalArgumentException("Element for this category not exist!");
+        }
+    }
+
+    public void deleteViewFromCategory(Category category, Object data) {
+        DrawerMainElement containerElement = null;
+        for (DrawerMainElement mainElement : adapter.mainElements) {
+            if (mainElement.categoryCode == category.ordinal()) {
+                containerElement = mainElement;
+                break;
+            }
+        }
+        if (containerElement != null) {
+            containerElement.secondaryAdapter.deleteElementEquData(data);
             containerElement.secondaryAdapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
+            containerElement.updateSize();
         } else {
             throw new IllegalArgumentException("Element for this category not exist!");
         }
@@ -273,7 +294,15 @@ class DrawerSecondaryAdapter extends BaseAdapter {
 
     public void addElement(DrawerSecondaryElement element) {
         secondaryElements.add(element);
+    }
 
+    public void deleteElementEquData(Object data) {
+        for (DrawerSecondaryElement secondaryElement : secondaryElements) {
+            if(secondaryElement.data.equals(data)){
+                secondaryElements.remove(secondaryElement);
+                return;
+            }
+        }
     }
 }
 

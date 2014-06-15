@@ -43,6 +43,8 @@ import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
 import com.kciray.android.commons.sys.App;
 import com.kciray.android.commons.sys.Global;
+import com.kciray.android.commons.sys.L;
+import com.kciray.android.commons.sys.LBroadManager;
 
 import java.io.File;
 
@@ -68,11 +70,12 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     static MainActivity mainActivity;
     KciNavDrawer<DrawerCategories> navDrawer;
     boolean devMode;
+    BookmarkManager bookmarkManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Global.context = this;
+        Global.setContext(this);
         mainActivity = this;
         mainPref = PreferenceManager.getDefaultSharedPreferences(this);
         boolean firstLaunch = mainPref.getBoolean(getStr(R.string.firstLaunch), true);
@@ -114,20 +117,31 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         drawerToggle = navDrawer.addButtonToActivity(this);
         setContentView(navDrawer);
         mainPref.registerOnSharedPreferenceChangeListener(this);
+
+        bookmarkManager = BookmarkManager.getInstance();
+        bookmarkManager.setMainActivity(this);
+        bookmarkManager.register();
     }
 
     private void setDefaultPrefForActive() {
         mainPref.edit().putBoolean(getStr(R.string.devMode), false).commit();
     }
     public void addElementToCategory(DrawerCategories category, int titleRes, File file){
+        addElementToCategory(category, L.tr(titleRes), file);
+    }
+
+    public void addElementToCategory(DrawerCategories category, String title, File file) {
         navDrawer.addInfoViewToCategory(category,
-                getIVBookmark(this.getStr(titleRes), file.getAbsolutePath()), file);
+                getIVBookmark(title, file.getAbsolutePath()), file);
+    }
+
+    public void removeElementFromCategory(DrawerCategories category, File data) {
+        navDrawer.deleteViewFromCategory(category, data);
     }
 
     @Override
     public void onClickItem(int categoryId, Object data) {
         DrawerCategories categories = DrawerCategories.values()[categoryId];
-
 
         switch (categories) {
             case BOOKMARKS:
@@ -140,14 +154,12 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-
                         navDrawer.closeDrawers();
                     }
                 });
 
                 break;
         }
-
     }
 
     private View getIVBookmark(String title, String description) {
@@ -245,12 +257,6 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             }
         });
 
-        addMenuAction(menu, R.id.close, new Runnable() {
-            @Override
-            public void run() {
-                finish();
-            }
-        });
         addMenuAction(menu, R.id.about, new Runnable() {
             @Override
             public void run() {

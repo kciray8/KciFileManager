@@ -60,6 +60,7 @@ public class DirElement {
 
         view = inflater.inflate(R.layout.direlement, null);
         sizeTextView = (TextView) view.findViewById(R.id.size);
+        sizeTextView.setText("");
 
         pathText = (TextView) view.findViewById(R.id.path);
         pathText.setText(text);

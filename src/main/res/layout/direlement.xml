@@ -30,8 +30,9 @@
 
     <TextView
         a:layout_height="wrap_content"
+        a:text="@string/test_str"
         a:layout_width="wrap_content"
-        a:textSize="12sp"
+        a:textSize="10sp"
         a:layout_alignParentBottom="true"
         a:layout_alignParentRight="true"
         a:id="@+id/size"/>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
+    a:orientation="vertical"
+    a:layout_width="match_parent"
+    a:layout_height="match_parent">
+
+    <TextView
+        a:text="@string/test_str"
+        a:paddingLeft="5dp"
+        a:paddingBottom="2dp"
+        a:background="@color/status_bar_bg"
+        a:id="@+id/status_view"
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content" />
+
+    <com.kciray.android.filemanager.FileView
+        a:id="@+id/fileView"
+        a:layout_weight="1"
+        a:layout_height="0dp"
+        a:layout_width="match_parent" />
+
+    <RelativeLayout
+        a:id="@+id/bottom_bar"
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content"
+        a:orientation="horizontal"
+        a:background="@color/gray3"
+        a:clickable="true">
+
+        <ImageButton
+            a:id="@+id/add_bookmark_button"
+            a:layout_width="wrap_content"
+            a:layout_height="wrap_content"
+            a:paddingLeft="@dimen/smallMargin"
+            a:paddingRight="@dimen/smallMargin"
+            a:paddingTop="@dimen/smallMargin"
+            a:paddingBottom="@dimen/smallMargin"
+            a:src="@drawable/gray_star"
+            a:background="?selectableItemBackground"
+            a:layout_alignParentRight="true"
+            a:contentDescription="@string/addBookmark" />
+    </RelativeLayout>
+</LinearLayout>

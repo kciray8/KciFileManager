@@ -23,6 +23,6 @@ package com.kciray.android.commons.sys;
 
 public class L {
     public static String tr(int resId) {
-        return Global.context.getString(resId);
+        return Global.getContext().getString(resId);
     }
 }

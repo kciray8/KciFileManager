@@ -8,8 +8,8 @@ import java.io.File;
 
 public class App {
     public static File getInternalDir() {
-        PackageManager m = Global.context.getPackageManager();
-        String s = Global.context.getPackageName();
+        PackageManager m = Global.getContext().getPackageManager();
+        String s = Global.getContext().getPackageName();
         PackageInfo p = null;
         try {
             p = m.getPackageInfo(s, 0);
@@ -20,9 +20,9 @@ public class App {
         return null;
     }
     public static void restart(){
-        Intent i = Global.context.getPackageManager()
-                .getLaunchIntentForPackage(Global.context.getPackageName());
+        Intent i = Global.getContext().getPackageManager()
+                .getLaunchIntentForPackage(Global.getContext().getPackageName());
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        Global.context.startActivity(i);
+        Global.getContext().startActivity(i);
     }
 }

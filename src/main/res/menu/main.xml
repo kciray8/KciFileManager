@@ -36,9 +36,4 @@
         a:id="@+id/about"
         a:showAsAction="never"
         a:title="О программе" />
-
-    <item
-        a:id="@+id/close"
-        a:showAsAction="never"
-        a:title="Свернуть" />
 </menu>
