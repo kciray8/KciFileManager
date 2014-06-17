@@ -2,6 +2,7 @@ package com.kciray.android.commons.gui;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.shapes.Shape;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -62,6 +63,7 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
         addView(listView);
 
         Hacks.setMarginForDrawerLayoutSubclass(this, 3);
+        setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
     }
 
     public void registerOnClickItemListener(OnItemClick onItemClickListener) {
@@ -174,7 +176,7 @@ class DrawerMainAdapter extends BaseAdapter {
             if (lastElement != null) {
                 //Add after element - we need insert separator
                 if (!lastElement.isCategory()) {
-                    DrawerElement separator = DrawerElement.getSeparator(context, 0xFFCFCFCF, 0.5F, Metric.dpToPx(15));
+                    DrawerElement separator = DrawerElement.getSeparator(context, 0xFFCFCFCF, 1, Metric.dpToPx(15));
                     element.topSeparator = separator;
                     separator.linkedElement = element;
                     elements.add(lastCategoryPos + 1, separator);
@@ -191,10 +193,10 @@ class DrawerMainAdapter extends BaseAdapter {
     @Override
     public boolean isEnabled(int position) {
         DrawerElement element = elements.get(position);
-        if (element.isCategory()) {
-            return false;
-        } else {
+        if (element.type == DrawerElement.Type.ELEMENT) {
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -248,10 +250,15 @@ class DrawerElement {
     }
 
     private static View getSeparatorView(Context context, int color, float height, int padding) {
-        LinearLayout mainLayout = new LinearLayout(context);
-        mainLayout.setBackgroundColor(color);
+        FrameLayout mainLayout = new FrameLayout(context);
         int someDP = Metric.dpToPx(height);
         mainLayout.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, someDP));
+        mainLayout.setPadding(padding, 0, padding, 0);
+
+        View rectangle = new View(context);
+        rectangle.setBackgroundColor(color);
+        rectangle.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, someDP));
+        mainLayout.addView(rectangle);
 
         return mainLayout;
     }
