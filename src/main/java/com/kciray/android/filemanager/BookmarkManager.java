@@ -6,12 +6,10 @@ import android.content.Intent;
 import android.widget.ImageButton;
 
 import com.kciray.android.commons.gui.ToastUtils;
-import com.kciray.android.commons.io.Q;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,11 +19,11 @@ public class BookmarkManager extends BroadcastReceiver {
     public static final String BOOKMARK_LABEL = "label";
     public static final String BOOKMARK_DIR = "dir";
     private MainActivity mainActivity;
-    private static List<Bookmark> bookmarkList = new LinkedList<>();
+    private List<Bookmark> bookmarkList = new LinkedList<>();
     private static BookmarkManager instance;
     private boolean lastBtnStateWasOff;
 
-    public void register(){
+    public void register() {
         LBroadManager.registerReceiver(this, BookmarkManager.ADD_NEW_BOOKMARK);
         LBroadManager.registerReceiver(this, BookmarkManager.DELETE_BOOKMARK);
     }
@@ -37,6 +35,15 @@ public class BookmarkManager extends BroadcastReceiver {
     private ImageButton addBookmarkButton;
 
     private BookmarkManager() {
+    }
+
+    public void loadAllBookmarks() {
+        bookmarkList = mainActivity.getDbHelper().getAllBookmarks();
+
+        for (Bookmark bookmark : bookmarkList) {
+            mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS,
+                    bookmark.label, new File(bookmark.dir));
+        }
     }
 
     public static BookmarkManager getInstance() {
@@ -52,6 +59,8 @@ public class BookmarkManager extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        MainActivity main = MainActivity.getInstance();
+
         switch (intent.getAction()) {
             case ADD_NEW_BOOKMARK:
                 String label = intent.getStringExtra(BOOKMARK_LABEL);
@@ -61,6 +70,8 @@ public class BookmarkManager extends BroadcastReceiver {
                 bookmarkList.add(bookmark);
                 mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS, label, dir);
                 updateBookmarkButton(dir.getAbsolutePath());
+
+                main.getDbHelper().addBookmarkToDB(label, dir.getAbsolutePath());
                 ToastUtils.show(String.format(L.tr(R.string.add_bookmark_toast), label));
                 break;
 

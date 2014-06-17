@@ -25,10 +25,12 @@
 
     <string name="root">Root</string>
     <string name="sd_card">SD card</string>
-    <string name="internal_dir">Internal dir</string>
+    <string name="internal_dir">Internal app dir</string>
     <string name="addBookmark">Add bookmark</string>
     <string name="input_bookmark_name">Input bookmark name</string>
     <string name="add_bookmark_toast">Bookmark \"%s\" was added!</string>
     <string name="delete_bookmark_q">You really want to delete bookmark?</string>
     <string name="delete_bm_success">Bookmark was delete</string>
+    <string name="dcim">DCIM</string>
+    <string name="downloads">Downloads</string>
 </resources>

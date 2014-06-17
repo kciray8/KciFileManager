@@ -6,7 +6,7 @@ import android.content.pm.PackageManager;
 
 import java.io.File;
 
-public class App {
+public class AppUtils {
     public static File getInternalDir() {
         PackageManager m = Global.getContext().getPackageManager();
         String s = Global.getContext().getPackageName();

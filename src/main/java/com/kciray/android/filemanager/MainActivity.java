@@ -41,10 +41,9 @@ import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
-import com.kciray.android.commons.sys.App;
+import com.kciray.android.commons.sys.AppUtils;
 import com.kciray.android.commons.sys.Global;
 import com.kciray.android.commons.sys.L;
-import com.kciray.android.commons.sys.LBroadManager;
 
 import java.io.File;
 
@@ -71,12 +70,15 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     KciNavDrawer<DrawerCategories> navDrawer;
     boolean devMode;
     BookmarkManager bookmarkManager;
+    DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Global.setContext(this);
         mainActivity = this;
+        dbHelper = new DBHelper();
+        Global.setContext(this);
+
         mainPref = PreferenceManager.getDefaultSharedPreferences(this);
         boolean firstLaunch = mainPref.getBoolean(getStr(R.string.firstLaunch), true);
         if (firstLaunch) {
@@ -109,8 +111,14 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         File sdCard = Environment.getExternalStorageDirectory();
         addElementToCategory(DrawerCategories.SYSTEM, R.string.sd_card, sdCard);
 
+        File DCIM = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DCIM);
+        addElementToCategory(DrawerCategories.SYSTEM, R.string.dcim, DCIM);
+
+        File downloads = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS);
+        addElementToCategory(DrawerCategories.SYSTEM, R.string.downloads, downloads);
+
         if (devMode) {
-            File internalDir = App.getInternalDir();
+            File internalDir = AppUtils.getInternalDir();
             addElementToCategory(DrawerCategories.SYSTEM, R.string.internal_dir, internalDir);
         }
 
@@ -121,12 +129,18 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         bookmarkManager = BookmarkManager.getInstance();
         bookmarkManager.setMainActivity(this);
         bookmarkManager.register();
+        bookmarkManager.loadAllBookmarks();
+    }
+
+    public DBHelper getDbHelper() {
+        return dbHelper;
     }
 
     private void setDefaultPrefForActive() {
         mainPref.edit().putBoolean(getStr(R.string.devMode), false).commit();
     }
-    public void addElementToCategory(DrawerCategories category, int titleRes, File file){
+
+    public void addElementToCategory(DrawerCategories category, int titleRes, File file) {
         addElementToCategory(category, L.tr(titleRes), file);
     }
 
@@ -330,7 +344,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                     new Runnable() {
                         @Override
                         public void run() {
-                            App.restart();
+                            AppUtils.restart();
                         }
                     });
         }
