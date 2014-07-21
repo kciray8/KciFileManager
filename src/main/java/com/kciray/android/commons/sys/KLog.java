@@ -19,8 +19,7 @@ public final class KLog {
         final StackTraceElement[] traces = Thread.currentThread().getStackTrace();
         boolean found = false;
 
-        for (int i = 0; i < traces.length; i++) {
-            StackTraceElement trace = traces[i];
+        for (StackTraceElement trace : traces) {
             try {
                 if (found) {
                     if (!trace.getClassName().startsWith(className)) {
@@ -29,7 +28,6 @@ public final class KLog {
                     }
                 } else if (trace.getClassName().startsWith(className)) {
                     found = true;
-                    continue;
                 }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();

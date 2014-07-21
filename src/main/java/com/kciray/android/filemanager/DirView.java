@@ -39,7 +39,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
-import com.kciray.android.commons.gui.OnInputListener;
 import com.kciray.android.commons.gui.ViewUtils;
 import com.kciray.android.commons.io.FileUtils;
 import com.kciray.android.commons.io.Q;
@@ -64,12 +63,7 @@ class ScrollPosition {
     }
 
     public void restore(final ListView list) {
-        list.post(new Runnable() {
-            @Override
-            public void run() {
-                list.setSelectionFromTop(position, y);
-            }
-        });
+        list.post(() -> list.setSelectionFromTop(position, y));
     }
 
     @Override
@@ -147,31 +141,23 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         addBookmarkButton = (ImageButton) bottomBar.findViewById(R.id.add_bookmark_button);
         BookmarkManager.getInstance().setAddBookmarkButton(addBookmarkButton);
         Q.out("setOnClickListener...");
-        addBookmarkButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (BookmarkManager.getInstance().getBookmark(directory.getAbsolutePath()) == null) {
-                    DialogUtils.inputString(L.tr(R.string.input_bookmark_name), directory.getName(),
-                            new OnInputListener() {
-                                @Override
-                                public void onInput(String str) {
-                                    Intent addNewBookmark = new Intent(BookmarkManager.ADD_NEW_BOOKMARK);
-                                    addNewBookmark.putExtra(BookmarkManager.BOOKMARK_LABEL, str);
-                                    addNewBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
-                                    LBroadManager.send(addNewBookmark);
-                                    Q.out("send...");
-                                }
-                            });
-                }else{
-                    DialogUtils.askQuestion(L.tr(R.string.confirm),L.tr(R.string.delete_bookmark_q), new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
-                            delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
-                            LBroadManager.send(delBookmark);
+        addBookmarkButton.setOnClickListener(v -> {
+            if (BookmarkManager.getInstance().getBookmark(directory.getAbsolutePath()) == null) {
+                DialogUtils.inputString(L.tr(R.string.input_bookmark_name), directory.getName(),
+                        str -> {
+                            Intent addNewBookmark = new Intent(BookmarkManager.ADD_NEW_BOOKMARK);
+                            addNewBookmark.putExtra(BookmarkManager.BOOKMARK_LABEL, str);
+                            addNewBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
+                            LBroadManager.send(addNewBookmark);
+                            Q.out("send...");
                         }
-                    });
-                }
+                );
+            }else{
+                DialogUtils.askQuestion(L.tr(R.string.confirm),L.tr(R.string.delete_bookmark_q), () -> {
+                    Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
+                    delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
+                    LBroadManager.send(delBookmark);
+                });
             }
         });
     }
@@ -231,15 +217,12 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
     }
 
     public void addNewFolder() {
-        DialogUtils.inputString(L.tr(R.string.enter_name_new_folder), new OnInputListener() {
-            @Override
-            public void onInput(String str) {
-                File newFile = new File(directory, str);
-                boolean success = newFile.mkdir();
+        DialogUtils.inputString(L.tr(R.string.enter_name_new_folder), str -> {
+            File newFile = new File(directory, str);
+            boolean success = newFile.mkdir();
 
-                if (success) {
-                    dynamicallyAddFile(newFile);
-                }
+            if (success) {
+                dynamicallyAddFile(newFile);
             }
         });
     }
@@ -262,19 +245,16 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
     }
 
     public void addNewFile() {
-        DialogUtils.inputString(L.tr(R.string.enter_name_new_file), new OnInputListener() {
-            @Override
-            public void onInput(String str) {
-                File newFile = new File(directory, str);
-                boolean success = false;
-                try {
-                    success = newFile.createNewFile();
-                    if (success) {
-                        dynamicallyAddFile(newFile);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+        DialogUtils.inputString(L.tr(R.string.enter_name_new_file), str -> {
+            File newFile = new File(directory, str);
+            boolean success = false;
+            try {
+                success = newFile.createNewFile();
+                if (success) {
+                    dynamicallyAddFile(newFile);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
@@ -322,20 +302,18 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         String fileName = dirElement.getFile().getName();
 
         DialogUtils.askQuestion(L.tr(R.string.confirm), String.format(L.tr(R.string.confirm_delete_file), fileName),
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        if (dirElement.isBackButton()) {
-                            goUp();
-                        }
-                        boolean success = recursiveDelete(dirElement.getFile());
-                        if (success) {
-                            dynamicallyRemoveDirElement(dirElement);
-                        } else {
-                            DialogUtils.toast(L.tr(R.string.error_delete_file));
-                        }
+                () -> {
+                    if (dirElement.isBackButton()) {
+                        goUp();
                     }
-                });
+                    boolean success = recursiveDelete(dirElement.getFile());
+                    if (success) {
+                        dynamicallyRemoveDirElement(dirElement);
+                    } else {
+                        DialogUtils.toast(L.tr(R.string.error_delete_file));
+                    }
+                }
+        );
     }
 
     private void findAndDeleteViewWithFile(File file) {
@@ -361,21 +339,15 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         final ProgressDialog progressDialog = DialogUtils.showProgressDialog(
                 "Подсчёт размера для папки " + dirName);
 
-        runParallel(new Runnable() {
-            @Override
-            public void run() {
-                final long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
-                final String strSize = String.format("%,d %s", dirSize, "[Byte]");
+        runParallel(() -> {
+            final long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
+            final String strSize = String.format("%,d %s", dirSize, "[Byte]");
 
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressDialog.cancel();
-                        DialogUtils.showMessage("Размер директории:", strSize);
-                        dirElement.setFileSize(dirSize);
-                    }
-                });
-            }
+            activity.runOnUiThread(() -> {
+                progressDialog.cancel();
+                DialogUtils.showMessage("Размер директории:", strSize);
+                dirElement.setFileSize(dirSize);
+            });
         });
     }
 

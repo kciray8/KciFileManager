@@ -1,7 +1,5 @@
 package com.kciray.android.commons.gui;
 
-import android.content.Context;
-
 import com.kciray.android.commons.sys.Global;
 
 

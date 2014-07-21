@@ -32,10 +32,8 @@ public class DialogUtils {
             }
         });
 
-        alert.setNegativeButton(L.tr(R.string.cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //Canceled
-            }
+        alert.setNegativeButton(L.tr(R.string.cancel), (dialog, whichButton) -> {
+            //Canceled
         });
 
         alert.show();
@@ -75,25 +73,22 @@ public class DialogUtils {
         builder.setMessage(message);
 
         builder.setPositiveButton(L.tr(R.string.yes),
-                new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                if (onYes != null) {
-                    onYes.run();
+                (dialog, which) -> {
+                    if (onYes != null) {
+                        onYes.run();
+                    }
+                    dialog.dismiss();
                 }
-                dialog.dismiss();
-            }
-        });
+        );
 
         builder.setNegativeButton(L.tr(R.string.no),
-                new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (onNo != null) {
-                    onNo.run();
+                (dialog, which) -> {
+                    if (onNo != null) {
+                        onNo.run();
+                    }
+                    dialog.dismiss();
                 }
-                dialog.dismiss();
-            }
-        });
+        );
 
         AlertDialog alert = builder.create();
         alert.show();

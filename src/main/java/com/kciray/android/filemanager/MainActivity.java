@@ -178,12 +178,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
 
                 //TODO - file operation IN OTHER THREAD!!!
                 Handler handler = new Handler(getBaseContext().getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        navDrawer.closeDrawers();
-                    }
-                });
+                handler.post(navDrawer::closeDrawers);
 
                 break;
         }
@@ -247,49 +242,30 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         getMenuInflater().inflate(R.menu.main, menu);
 
         MenuItem showFolderPropItem = menu.findItem(R.id.show_root_actions);
-        showFolderPropItem.setOnMenuItemClickListener(new MenuItem.
-                OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                openContextMenu(activeDirView.backNavElement.getView());
-                return false;
-            }
+        showFolderPropItem.setOnMenuItemClickListener(item -> {
+            openContextMenu(activeDirView.backNavElement.getView());
+            return false;
         });
 
         MenuItem addNewFileItem = menu.findItem(R.id.add_new_file);
-        addNewFileItem.setOnMenuItemClickListener(new MenuItem.
-                OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                activeDirView.addNewFile();
-                return false;
-            }
+        addNewFileItem.setOnMenuItemClickListener(item -> {
+            activeDirView.addNewFile();
+            return false;
         });
 
         MenuItem addNewFolderItem = menu.findItem(R.id.add_new_folder);
-        addNewFolderItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                activeDirView.addNewFolder();
-                return false;
-            }
+        addNewFolderItem.setOnMenuItemClickListener(item -> {
+            activeDirView.addNewFolder();
+            return false;
         });
 
 
-        addMenuAction(menu, R.id.settings, new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(MainActivity.this, FMPreferenceActivity.class);
-                startActivity(intent);
-            }
+        addMenuAction(menu, R.id.settings, () -> {
+            Intent intent = new Intent(MainActivity.this, FMPreferenceActivity.class);
+            startActivity(intent);
         });
 
-        addMenuAction(menu, R.id.about, new Runnable() {
-            @Override
-            public void run() {
-                startNewActivity(AboutActivity.class);
-            }
-        });
+        addMenuAction(menu, R.id.about, () -> startNewActivity(AboutActivity.class));
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -302,12 +278,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     private void addMenuAction(Menu menu, int itemId, final Runnable runnable) {
         MenuItem settingsItem = menu.findItem(itemId);
         if (settingsItem != null)
-            settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    runnable.run();
-                    return false;
-                }
+            settingsItem.setOnMenuItemClickListener(item -> {
+                runnable.run();
+                return false;
             });
     }
 
@@ -354,12 +327,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getStr(R.string.devMode))) {
             DialogUtils.askQuestion("Требуется перезапуск!", "Изменения будут доступны только после перезапуска. Перезапустить приложение сейчас?",
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            AppUtils.restart();
-                        }
-                    });
+                    AppUtils::restart);
         }
     }
 }

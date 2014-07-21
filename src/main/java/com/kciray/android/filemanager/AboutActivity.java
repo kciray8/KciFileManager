@@ -19,11 +19,6 @@ public class AboutActivity extends Activity{
         textView.setText(Html.fromHtml(html));
 
         Button onClose = (Button) findViewById(R.id.close);
-        onClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        onClose.setOnClickListener(v -> finish());
     }
 }

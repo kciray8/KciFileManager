@@ -51,29 +51,23 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
         listView.setBackgroundColor(0xffe0e0e0);
         listView.setDivider(null);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                DrawerElement element = (DrawerElement) adapter.getItem(position);
-                if (element.type == DrawerElement.Type.ELEMENT) {
-                    if (onItemClickListener != null) {
-                        onItemClickListener.onClickItem(element.categoryCode, element.data);
-                    }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            DrawerElement element = (DrawerElement) adapter.getItem(position);
+            if (element.type == DrawerElement.Type.ELEMENT) {
+                if (onItemClickListener != null) {
+                    onItemClickListener.onClickItem(element.categoryCode, element.data);
                 }
             }
         });
 
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                DrawerElement element = (DrawerElement) adapter.getItem(position);
-                if (element.type == DrawerElement.Type.ELEMENT) {
-                    if (onItemLongClickListener != null) {
-                        onItemLongClickListener.onClickItem(element.categoryCode, element.data);
-                    }
+        listView.setOnItemLongClickListener((parent, view, position, id) -> {
+            DrawerElement element = (DrawerElement) adapter.getItem(position);
+            if (element.type == DrawerElement.Type.ELEMENT) {
+                if (onItemLongClickListener != null) {
+                    onItemLongClickListener.onClickItem(element.categoryCode, element.data);
                 }
-                return false;
             }
+            return false;
         });
 
         addView(listView);
@@ -213,11 +207,7 @@ class DrawerMainAdapter extends BaseAdapter {
     @Override
     public boolean isEnabled(int position) {
         DrawerElement element = elements.get(position);
-        if (element.type == DrawerElement.Type.ELEMENT) {
-            return true;
-        } else {
-            return false;
-        }
+        return element.type == DrawerElement.Type.ELEMENT;
     }
 
     public void deleteElementEquData(Object data, int categoryId) {

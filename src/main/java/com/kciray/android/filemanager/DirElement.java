@@ -80,23 +80,20 @@ public class DirElement {
     }
 
     public void rename() {
-        DialogUtils.inputString("Введите новое имя", file.getName(), new OnInputListener() {
-            @Override
-            public void onInput(String str) {
-                File oldFile = file;
-                File newFile = new File(file.getParent(), str);
-                boolean success = file.renameTo(newFile);
-                if (success) {
-                    file = newFile;
-                    if (!isBackButton()) {
-                        pathText.setText(str);
-                    } else {
-                        FileScanner.deleteFromCache(oldFile);
-                        dirView.updateRootDirectory(file);
-                    }
+        DialogUtils.inputString("Введите новое имя", file.getName(), str -> {
+            File oldFile = file;
+            File newFile = new File(file.getParent(), str);
+            boolean success = file.renameTo(newFile);
+            if (success) {
+                file = newFile;
+                if (!isBackButton()) {
+                    pathText.setText(str);
                 } else {
-                    DialogUtils.toast("Ошибка при переименовании файла");
+                    FileScanner.deleteFromCache(oldFile);
+                    dirView.updateRootDirectory(file);
                 }
+            } else {
+                DialogUtils.toast("Ошибка при переименовании файла");
             }
         });
     }

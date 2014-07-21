@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
-import com.kciray.android.commons.io.Q;
 import com.kciray.android.commons.sys.Global;
 
 import java.util.LinkedList;
