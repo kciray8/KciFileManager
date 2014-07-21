@@ -7,9 +7,8 @@ import java.util.Calendar;
 public final class KLog {
     private static final String TAG = "KLog";
 
-    public static void v(String msg) {
-        String messageAndLocation = getLocation() + msg;
-
+    public static void v(Object object) {
+        String messageAndLocation = getLocation() + ((object != null) ? object.toString() : "null");
 
         android.util.Log.v(TAG, messageAndLocation);
     }
@@ -24,7 +23,7 @@ public final class KLog {
                 if (found) {
                     if (!trace.getClassName().startsWith(className)) {
                         Class<?> clazz = Class.forName(trace.getClassName());
-                        return " [" + getClassName(clazz) + ":" + trace.getMethodName() + ":" + trace.getLineNumber() + "]: ";
+                        return "at " +  clazz.getPackage().getName() + "(" + getClassName(clazz) + ".java:" + trace.getLineNumber() + ") "  + ": ";
                     }
                 } else if (trace.getClassName().startsWith(className)) {
                     found = true;

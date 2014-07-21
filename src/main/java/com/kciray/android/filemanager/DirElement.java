@@ -29,7 +29,6 @@ import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.sys.L;
-import com.kciray.android.commons.gui.OnInputListener;
 
 import java.io.File;
 import java.util.Comparator;

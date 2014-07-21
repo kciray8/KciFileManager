@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.widget.ImageButton;
 
 import com.kciray.android.commons.gui.ToastUtils;
+import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
@@ -39,10 +40,12 @@ public class BookmarkManager extends BroadcastReceiver {
 
     public void loadAllBookmarks() {
         bookmarkList = mainActivity.getDbHelper().getAllBookmarks();
+    }
 
+    public void addBookmarksToNavDrawer(){
         for (Bookmark bookmark : bookmarkList) {
             mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS,
-                    bookmark.label, new File(bookmark.dir));
+                    bookmark.label, bookmark.dir);
         }
     }
 
@@ -66,7 +69,7 @@ public class BookmarkManager extends BroadcastReceiver {
             case ADD_NEW_BOOKMARK:
                 String label = intent.getStringExtra(BOOKMARK_LABEL);
                 File dir = (File) intent.getSerializableExtra(BOOKMARK_DIR);
-                Bookmark bookmark = new Bookmark(label, dir.getAbsolutePath());
+                Bookmark bookmark = new Bookmark(label, dir);
 
                 bookmarkList.add(bookmark);
                 mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS, label, dir);
@@ -90,7 +93,9 @@ public class BookmarkManager extends BroadcastReceiver {
     }
 
     public void updateBookmarkButton(String dir) {
-        Bookmark bookmark = getBookmark(dir);
+        KLog.v(dir);
+        Bookmark bookmark = getBookmark(new File(dir));
+        KLog.v(bookmark);
         if (bookmark != null) {
             addBookmarkButton.setImageResource(R.drawable.blue_star);
         } else {
@@ -98,7 +103,7 @@ public class BookmarkManager extends BroadcastReceiver {
         }
     }
 
-    public Bookmark getBookmark(String dir) {
+    public Bookmark getBookmark(File dir) {
         for (Bookmark bookmark : bookmarkList) {
             if (bookmark.dir.equals(dir)) {
                 return bookmark;
@@ -123,9 +128,9 @@ public class BookmarkManager extends BroadcastReceiver {
 
 class Bookmark {
     String label;
-    String dir;
+    File dir;
 
-    public Bookmark(String label, String dir) {
+    public Bookmark(String label, File dir) {
         this.label = label;
         this.dir = dir;
     }

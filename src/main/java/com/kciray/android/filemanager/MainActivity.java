@@ -41,25 +41,24 @@ import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
-import com.kciray.android.commons.io.Q;
 import com.kciray.android.commons.sys.AppUtils;
 import com.kciray.android.commons.sys.Global;
-import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
 
 import java.io.File;
 
 public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>, SharedPreferences.OnSharedPreferenceChangeListener {
-    private class onLongClickDrawerListener implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>{
+    private class onLongClickDrawerListener implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories> {
         @Override
         public void onClickItem(int categoryId, Object data) {
-            if(categoryId == DrawerCategories.BOOKMARKS.ordinal()){
+            if (categoryId == DrawerCategories.BOOKMARKS.ordinal()) {
 
             }
         }
     }
 
     DirView activeDirView;
+
     enum DrawerCategories {SYSTEM, BOOKMARKS, LOL}
 
     public SharedPreferences getMainPref() {
@@ -89,13 +88,17 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         Global.setContext(this);
         dbHelper = new DBHelper();
 
+        bookmarkManager = BookmarkManager.getInstance();
+        bookmarkManager.setMainActivity(this);
+        bookmarkManager.register();
+        bookmarkManager.loadAllBookmarks();
+
         mainPref = PreferenceManager.getDefaultSharedPreferences(this);
         boolean firstLaunch = mainPref.getBoolean(getStr(R.string.firstLaunch), true);
         if (firstLaunch) {
             setDefaultPrefForActive();
             mainPref.edit().putBoolean(getStr(R.string.firstLaunch), false).commit();
         }
-        KLog.v("fdfd");
 
         String rootSd = Environment.getExternalStorageDirectory().getPath();
         String dir;
@@ -138,11 +141,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         setContentView(navDrawer);
         mainPref.registerOnSharedPreferenceChangeListener(this);
 
-        Q.out("reg");
-        bookmarkManager = BookmarkManager.getInstance();
-        bookmarkManager.setMainActivity(this);
-        bookmarkManager.register();
-        bookmarkManager.loadAllBookmarks();
+        bookmarkManager.addBookmarksToNavDrawer();
     }
 
     public DBHelper getDbHelper() {
@@ -221,11 +220,23 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
 
     @Override
     protected void onDestroy() {
-        String path = activeDirView.getDirectory().getAbsolutePath();
-        String name = getStr(R.string.autoSaveLastDirStr);
-        mainPref.edit().putString(name, path).commit();
-
         super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        saveLastDir();
+    }
+
+    private void saveLastDir() {
+        boolean autoSaveLastDir = mainPref.getBoolean(getStr(R.string.autoSaveLastDir), true);
+
+        if (autoSaveLastDir) {
+            String path = activeDirView.getDirectory().getAbsolutePath();
+            String name = getStr(R.string.autoSaveLastDirStr);
+            mainPref.edit().putString(name, path).commit();
+        }
     }
 
     @Override

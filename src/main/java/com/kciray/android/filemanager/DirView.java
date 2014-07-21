@@ -108,10 +108,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         listView = (FileView) mainLayout.findViewById(R.id.fileView);
         statusView = (TextView) mainLayout.findViewById(R.id.status_view);
 
-        setDirectory(dir);
-
         adapter = new DirViewAdapter(context);
-        rebuildDir();
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             DirElement dirElement = adapter.getItem(position);
@@ -140,9 +137,8 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         View bottomBar = mainLayout.findViewById(R.id.bottom_bar);
         addBookmarkButton = (ImageButton) bottomBar.findViewById(R.id.add_bookmark_button);
         BookmarkManager.getInstance().setAddBookmarkButton(addBookmarkButton);
-        Q.out("setOnClickListener...");
-        addBookmarkButton.setOnClickListener(v -> {
-            if (BookmarkManager.getInstance().getBookmark(directory.getAbsolutePath()) == null) {
+        addBookmarkButton.setOnClickListener( v -> {
+            if (BookmarkManager.getInstance().getBookmark(directory) == null) {
                 DialogUtils.inputString(L.tr(R.string.input_bookmark_name), directory.getName(),
                         str -> {
                             Intent addNewBookmark = new Intent(BookmarkManager.ADD_NEW_BOOKMARK);
@@ -160,6 +156,8 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                 });
             }
         });
+
+        goToDir(new File(dir));
     }
 
     public void goToDir(File directory) {

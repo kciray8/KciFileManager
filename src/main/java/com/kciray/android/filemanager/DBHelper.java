@@ -8,6 +8,7 @@ import android.provider.BaseColumns;
 
 import com.kciray.android.commons.sys.Global;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,7 +69,7 @@ class DBHelper extends SQLiteOpenHelper {
         while (cursor.moveToNext()) {
             String name = cursor.getString(1);
             String path = cursor.getString(2);
-            Bookmark bookmark = new Bookmark(name, path);
+            Bookmark bookmark = new Bookmark(name, new File(path));
             bookmarks.add(bookmark);
         }
 
