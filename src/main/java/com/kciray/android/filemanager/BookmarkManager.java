@@ -61,6 +61,7 @@ public class BookmarkManager extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         MainActivity main = MainActivity.getInstance();
 
+
         switch (intent.getAction()) {
             case ADD_NEW_BOOKMARK:
                 String label = intent.getStringExtra(BOOKMARK_LABEL);
@@ -70,9 +71,9 @@ public class BookmarkManager extends BroadcastReceiver {
                 bookmarkList.add(bookmark);
                 mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS, label, dir);
                 updateBookmarkButton(dir.getAbsolutePath());
-
                 main.getDbHelper().addBookmarkToDB(label, dir.getAbsolutePath());
                 ToastUtils.show(String.format(L.tr(R.string.add_bookmark_toast), label));
+
                 break;
 
             case DELETE_BOOKMARK:
@@ -82,6 +83,7 @@ public class BookmarkManager extends BroadcastReceiver {
                 deleteBookmark(path);
                 mainActivity.removeElementFromCategory(MainActivity.DrawerCategories.BOOKMARKS, bookmarkFile);
                 updateBookmarkButton(path);
+                main.getDbHelper().deleteBookmarkFromDB(path);
                 ToastUtils.show(L.tr(R.string.delete_bm_success));
                 break;
         }

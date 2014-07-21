@@ -16,6 +16,7 @@
     <CheckBoxPreference
         a:title="Режим разработчика"
         a:summary="Показать дополнительные пункты меню"
+
         a:key="@string/devMode" />
 
 </PreferenceScreen>

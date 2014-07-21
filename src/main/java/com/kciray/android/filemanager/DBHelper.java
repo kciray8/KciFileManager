@@ -75,4 +75,11 @@ class DBHelper extends SQLiteOpenHelper {
 
         return bookmarks;
     }
+
+    public void deleteBookmarkFromDB(String path) {
+        String deleteQuery = "DELETE FROM " + BookmarkTable.TABLE_NAME +
+                " WHERE " + BookmarkTable.COLUMN_PATH + "='" + path + "'";
+
+        getDB().execSQL(deleteQuery);
+    }
 }

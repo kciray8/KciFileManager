@@ -119,24 +119,20 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         adapter = new DirViewAdapter(context);
         rebuildDir();
 
-        listView.setOnItemClickListener(new ListView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent,
-                                    View view, int position, long id) {
-                DirElement dirElement = adapter.getItem(position);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            DirElement dirElement = adapter.getItem(position);
 
-                if (dirElement.isBackButton()) {
-                    goUp();
-                } else {
-                    File dirElementFile = dirElement.getFile();
-                    if (dirElementFile.isDirectory()) {
-                        dirElementFile.listFiles();
+            if (dirElement.isBackButton()) {
+                goUp();
+            } else {
+                File dirElementFile = dirElement.getFile();
+                if (dirElementFile.isDirectory()) {
+                    dirElementFile.listFiles();
 
-                        if (dirElementFile.listFiles() != null) {
-                            goToDir(dirElementFile);
-                        } else {
-                            DialogUtils.toast(L.tr(R.string.error_open_folder));
-                        }
+                    if (dirElementFile.listFiles() != null) {
+                        goToDir(dirElementFile);
+                    } else {
+                        DialogUtils.toast(L.tr(R.string.error_open_folder));
                     }
                 }
             }
@@ -150,6 +146,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         View bottomBar = mainLayout.findViewById(R.id.bottom_bar);
         addBookmarkButton = (ImageButton) bottomBar.findViewById(R.id.add_bookmark_button);
         BookmarkManager.getInstance().setAddBookmarkButton(addBookmarkButton);
+        Q.out("setOnClickListener...");
         addBookmarkButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,6 +159,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                                     addNewBookmark.putExtra(BookmarkManager.BOOKMARK_LABEL, str);
                                     addNewBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
                                     LBroadManager.send(addNewBookmark);
+                                    Q.out("send...");
                                 }
                             });
                 }else{

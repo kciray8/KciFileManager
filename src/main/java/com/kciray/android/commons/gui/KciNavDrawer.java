@@ -2,7 +2,6 @@ package com.kciray.android.commons.gui;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.shapes.Shape;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,6 +25,7 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
     private static int fullWidth = 240;//dp
 
     private OnItemClick onItemClickListener;
+    private OnItemClick onItemLongClickListener;
     private FrameLayout contentLayout;
     private ListView listView;
     private Context context;
@@ -56,10 +56,26 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DrawerElement element = (DrawerElement) adapter.getItem(position);
                 if (element.type == DrawerElement.Type.ELEMENT) {
-                    onItemClickListener.onClickItem(element.categoryCode, element.data);
+                    if (onItemClickListener != null) {
+                        onItemClickListener.onClickItem(element.categoryCode, element.data);
+                    }
                 }
             }
         });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                DrawerElement element = (DrawerElement) adapter.getItem(position);
+                if (element.type == DrawerElement.Type.ELEMENT) {
+                    if (onItemLongClickListener != null) {
+                        onItemLongClickListener.onClickItem(element.categoryCode, element.data);
+                    }
+                }
+                return false;
+            }
+        });
+
         addView(listView);
 
         Hacks.setMarginForDrawerLayoutSubclass(this, 3);
@@ -68,6 +84,10 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
 
     public void registerOnClickItemListener(OnItemClick onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
+    }
+
+    public void registerOnLongClickItemListener(OnItemClick onItemLongClickListener) {
+        this.onItemLongClickListener = onItemLongClickListener;
     }
 
     public ActionBarDrawerToggle addButtonToActivity(ActionBarActivity activity) {
@@ -205,11 +225,14 @@ class DrawerMainAdapter extends BaseAdapter {
             if ((element.categoryCode == categoryId) && (element.data != null)) {
                 if (element.data.equals(data)) {
                     elements.remove(element);
+                    if (element.topSeparator != null) {
+                        elements.remove(element.topSeparator);
+                    }
+                    notifyDataSetChanged();
                     break;
                 }
             }
         }
-        notifyDataSetChanged();
     }
 }
 
