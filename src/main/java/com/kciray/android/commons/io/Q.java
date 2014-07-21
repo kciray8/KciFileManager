@@ -24,10 +24,12 @@ package com.kciray.android.commons.io;
 import android.util.Log;
 
 public class Q {
+    @Deprecated
     public static void out(String str) {
         Log.d("Q.out", str);
     }
 
+    @Deprecated
     public static void out(Object obj) {
         if (obj != null) {
             Log.d("Q.out", obj.toString());

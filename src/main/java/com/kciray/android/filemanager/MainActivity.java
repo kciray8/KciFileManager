@@ -44,19 +44,11 @@ import com.kciray.android.commons.gui.KciNavDrawer;
 import com.kciray.android.commons.sys.AppUtils;
 import com.kciray.android.commons.sys.Global;
 import com.kciray.android.commons.sys.L;
+import com.kciray.android.commons.sys.LBroadManager;
 
 import java.io.File;
 
 public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>, SharedPreferences.OnSharedPreferenceChangeListener {
-    private class onLongClickDrawerListener implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories> {
-        @Override
-        public void onClickItem(int categoryId, Object data) {
-            if (categoryId == DrawerCategories.BOOKMARKS.ordinal()) {
-
-            }
-        }
-    }
-
     DirView activeDirView;
 
     enum DrawerCategories {SYSTEM, BOOKMARKS, LOL}
@@ -112,11 +104,28 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
 
         devMode = mainPref.getBoolean(getStr(R.string.devMode), false);
         activeDirView = new DirView(this, dir);
+        activeDirView.goToDir(new File(dir));
 
         navDrawer = new KciNavDrawer<>(this);
         navDrawer.setMainContent(activeDirView);
         navDrawer.registerOnClickItemListener(this);
-        navDrawer.registerOnLongClickItemListener(new onLongClickDrawerListener());
+
+
+        navDrawer.registerOnCreatePopupMenuListener((popupMenu, categoryId, data) -> {
+            if (categoryId == DrawerCategories.BOOKMARKS.ordinal()) {
+                final MenuItem itemDelete = popupMenu.getMenu().add(R.string.delete_bookmark);
+                popupMenu.setOnMenuItemClickListener((item) -> {
+                            if (item == itemDelete) {
+                                Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
+                                delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, (File)data);
+                                LBroadManager.send(delBookmark);
+                            }
+                            return true;
+                        }
+                );
+            }
+        });
+
         navDrawer.addCategory(DrawerCategories.SYSTEM, R.string.cat_system);
         navDrawer.addCategory(DrawerCategories.BOOKMARKS, R.string.cat_bookmarks);
 
@@ -237,6 +246,10 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             String name = getStr(R.string.autoSaveLastDirStr);
             mainPref.edit().putString(name, path).commit();
         }
+    }
+
+    public File getCurrentDir(){
+        return activeDirView.getDirectory();
     }
 
     @Override

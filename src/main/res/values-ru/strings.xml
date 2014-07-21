@@ -24,5 +24,6 @@
     <string name="add_bookmark_toast">Закладка \"%s\" успешно добавлена!</string>
     <string name="delete_bookmark_q">Вы действительно хотите удалить закладку?</string>
     <string name="delete_bm_success">Закладка была удалена</string>
+    <string name="delete_bookmark">Delete bookmark</string>
 
 </resources>

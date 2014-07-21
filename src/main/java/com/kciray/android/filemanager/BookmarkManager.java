@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.widget.ImageButton;
 
 import com.kciray.android.commons.gui.ToastUtils;
-import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
@@ -42,7 +41,7 @@ public class BookmarkManager extends BroadcastReceiver {
         bookmarkList = mainActivity.getDbHelper().getAllBookmarks();
     }
 
-    public void addBookmarksToNavDrawer(){
+    public void addBookmarksToNavDrawer() {
         for (Bookmark bookmark : bookmarkList) {
             mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS,
                     bookmark.label, bookmark.dir);
@@ -73,7 +72,7 @@ public class BookmarkManager extends BroadcastReceiver {
 
                 bookmarkList.add(bookmark);
                 mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS, label, dir);
-                updateBookmarkButton(dir.getAbsolutePath());
+                updateBookmarkButton(dir);
                 main.getDbHelper().addBookmarkToDB(label, dir.getAbsolutePath());
                 ToastUtils.show(String.format(L.tr(R.string.add_bookmark_toast), label));
 
@@ -81,25 +80,24 @@ public class BookmarkManager extends BroadcastReceiver {
 
             case DELETE_BOOKMARK:
                 File bookmarkFile = (File) intent.getSerializableExtra(BOOKMARK_DIR);
-                String path = bookmarkFile.getAbsolutePath();
 
-                deleteBookmark(path);
+                deleteBookmark(bookmarkFile);
                 mainActivity.removeElementFromCategory(MainActivity.DrawerCategories.BOOKMARKS, bookmarkFile);
-                updateBookmarkButton(path);
-                main.getDbHelper().deleteBookmarkFromDB(path);
+                updateBookmarkButton(bookmarkFile);
+                main.getDbHelper().deleteBookmarkFromDB(bookmarkFile);
                 ToastUtils.show(L.tr(R.string.delete_bm_success));
                 break;
         }
     }
 
-    public void updateBookmarkButton(String dir) {
-        KLog.v(dir);
-        Bookmark bookmark = getBookmark(new File(dir));
-        KLog.v(bookmark);
-        if (bookmark != null) {
-            addBookmarkButton.setImageResource(R.drawable.blue_star);
-        } else {
-            addBookmarkButton.setImageResource(R.drawable.gray_star);
+    public void updateBookmarkButton(File dir) {
+        if (mainActivity.getCurrentDir().equals(dir)) {
+            Bookmark bookmark = getBookmark(dir);
+            if (bookmark != null) {
+                addBookmarkButton.setImageResource(R.drawable.blue_star);
+            } else {
+                addBookmarkButton.setImageResource(R.drawable.gray_star);
+            }
         }
     }
 
@@ -112,7 +110,7 @@ public class BookmarkManager extends BroadcastReceiver {
         return null;
     }
 
-    public void deleteBookmark(String dir) {
+    public void deleteBookmark(File dir) {
         for (Bookmark bookmark : bookmarkList) {
             if (bookmark.dir.equals(dir)) {
                 bookmarkList.remove(bookmark);

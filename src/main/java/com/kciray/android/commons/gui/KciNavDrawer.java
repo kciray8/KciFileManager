@@ -6,6 +6,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.PopupMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.kciray.android.commons.sys.Global;
 import com.kciray.android.filemanager.R;
 
 import java.util.LinkedList;
@@ -25,13 +27,22 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
 
     private OnItemClick onItemClickListener;
     private OnItemClick onItemLongClickListener;
+    private OnCreatePopupMenu onCreatePopupMenuListener;
     private FrameLayout contentLayout;
     private ListView listView;
     private Context context;
     private DrawerMainAdapter adapter = new DrawerMainAdapter();
 
+    public void registerOnCreatePopupMenuListener(OnCreatePopupMenu onCreatePopupMenuListener) {
+        this.onCreatePopupMenuListener = onCreatePopupMenuListener;
+    }
+
     public interface OnItemClick<Category extends Enum> {
         void onClickItem(int categoryId, Object data);
+    }
+
+    public interface OnCreatePopupMenu {
+        void onCreatePopupMenu(PopupMenu popupMenu, int categoryId, Object data);
     }
 
     public KciNavDrawer(Context context) {
@@ -61,12 +72,15 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
 
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
             DrawerElement element = (DrawerElement) adapter.getItem(position);
-            if (element.type == DrawerElement.Type.ELEMENT) {
-                if (onItemLongClickListener != null) {
-                    onItemLongClickListener.onClickItem(element.categoryCode, element.data);
+            if (onCreatePopupMenuListener != null) {
+                PopupMenu popupMenu = new PopupMenu(Global.getContext(), view);
+                onCreatePopupMenuListener.onCreatePopupMenu(popupMenu, element.categoryCode, element.data);
+                if (popupMenu.getMenu().size() != 0) {
+                    popupMenu.show();
                 }
             }
-            return false;
+
+            return true;
         });
 
         addView(listView);

@@ -41,7 +41,6 @@ import android.widget.TextView;
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.ViewUtils;
 import com.kciray.android.commons.io.FileUtils;
-import com.kciray.android.commons.io.Q;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
@@ -145,7 +144,6 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                             addNewBookmark.putExtra(BookmarkManager.BOOKMARK_LABEL, str);
                             addNewBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
                             LBroadManager.send(addNewBookmark);
-                            Q.out("send...");
                         }
                 );
             }else{
@@ -157,13 +155,13 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
             }
         });
 
-        goToDir(new File(dir));
+        directory = new File(dir);
     }
 
     public void goToDir(File directory) {
-        BookmarkManager.getInstance().updateBookmarkButton(directory.getAbsolutePath());
         this.directory = directory;
         rebuildDir();
+        BookmarkManager.getInstance().updateBookmarkButton(directory);
     }
 
     public void goUp() {
@@ -269,7 +267,6 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
 
     private void showActionsForFile(File file, ContextMenu menu) {
         boolean isRoot = file.getAbsolutePath().equals("/");
-        Q.out(file.getAbsolutePath());
 
         menu.setHeaderTitle(L.tr(R.string.actions));
         menu.setHeaderIcon(R.drawable.info);
