@@ -16,7 +16,13 @@
     <CheckBoxPreference
         a:title="Режим разработчика"
         a:summary="Показать дополнительные пункты меню"
-
         a:key="@string/devMode" />
+
+    <EditTextPreference
+        a:title="Размер истории"
+        a:summary="Максимальный размер истории навигации"
+        a:numeric="integer"
+        a:defaultValue="50"
+        a:key="@string/historyLength" />
 
 </PreferenceScreen>

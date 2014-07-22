@@ -3,6 +3,7 @@
     <string name="autoSort">autoSort</string>
     <string name="autoSaveLastDir">autoSaveLastDir</string>
     <string name="devMode">devMode</string>
+    <string name="historyLength">historyLength</string>
     
     <!-- Non GUI -->
     <string name="autoSaveLastDirStr">autoSaveLastDirStr</string>

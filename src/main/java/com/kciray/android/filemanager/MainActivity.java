@@ -21,6 +21,7 @@
 
 package com.kciray.android.filemanager;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -39,6 +40,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
+import com.kciray.android.commons.gui.ActivityUtils;
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
 import com.kciray.android.commons.sys.AppUtils;
@@ -47,9 +51,28 @@ import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.kciray.android.commons.sys.KLog.v;
+
 
 public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>, SharedPreferences.OnSharedPreferenceChangeListener {
-    DirView activeDirView;
+    public static final int REQUEST_CODE_TO_HISTORY = 1;
+
+    private DirView activeDirView;
+    private static int historyMaxSize;
+
+    public static void addToHistory(File file) {
+        if (history.size() == historyMaxSize) {
+            history.remove(history.size() - 1);
+        }
+        history.add(0, file);
+    }
+
+    public static List<File> getHistory() {
+        return history;
+    }
 
     enum DrawerCategories {SYSTEM, BOOKMARKS, LOL}
 
@@ -72,6 +95,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     boolean devMode;
     BookmarkManager bookmarkManager;
     DBHelper dbHelper;
+    private static List<File> history = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +115,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             setDefaultPrefForActive();
             mainPref.edit().putBoolean(getStr(R.string.firstLaunch), false).commit();
         }
+        historyMaxSize = new Integer(mainPref.getString(getStr(R.string.historyLength), "50"));
 
         String rootSd = Environment.getExternalStorageDirectory().getPath();
         String dir;
@@ -110,14 +135,13 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         navDrawer.setMainContent(activeDirView);
         navDrawer.registerOnClickItemListener(this);
 
-
         navDrawer.registerOnCreatePopupMenuListener((popupMenu, categoryId, data) -> {
             if (categoryId == DrawerCategories.BOOKMARKS.ordinal()) {
                 final MenuItem itemDelete = popupMenu.getMenu().add(R.string.delete_bookmark);
                 popupMenu.setOnMenuItemClickListener((item) -> {
                             if (item == itemDelete) {
                                 Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
-                                delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, (File)data);
+                                delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, (File) data);
                                 LBroadManager.send(delBookmark);
                             }
                             return true;
@@ -248,7 +272,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         }
     }
 
-    public File getCurrentDir(){
+    public File getCurrentDir() {
         return activeDirView.getDirectory();
     }
 
@@ -259,6 +283,11 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public void goToDirFromHis(int id) {
+        File dir = history.get(id);
+        activeDirView.goToDir(dir);
     }
 
     @Override
@@ -283,20 +312,31 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             return false;
         });
 
+        addMenuAction(menu, R.id.history, () -> {
+            Intent intent = new Intent(this, HistoryActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_TO_HISTORY);
+        });
 
         addMenuAction(menu, R.id.settings, () -> {
             Intent intent = new Intent(MainActivity.this, FMPreferenceActivity.class);
             startActivity(intent);
         });
 
-        addMenuAction(menu, R.id.about, () -> startNewActivity(AboutActivity.class));
+        addMenuAction(menu, R.id.about, () -> ActivityUtils.start(AboutActivity.class));
+
 
         return super.onCreateOptionsMenu(menu);
     }
 
-    void startNewActivity(Class<?> cls) {
-        Intent intent = new Intent(this, cls);
-        startActivity(intent);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_TO_HISTORY) {
+            if (resultCode == Activity.RESULT_OK) {
+                int id = data.getIntExtra(HistoryActivity.EXTRA_ID, 0);
+                goToDirFromHis(id);
+            }
+        }
     }
 
     private void addMenuAction(Menu menu, int itemId, final Runnable runnable) {
@@ -352,6 +392,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         if (key.equals(getStr(R.string.devMode))) {
             DialogUtils.askQuestion("Требуется перезапуск!", "Изменения будут доступны только после перезапуска. Перезапустить приложение сейчас?",
                     AppUtils::restart);
+        }
+        if (key.equals(getStr(R.string.historyLength))) {
+            historyMaxSize = new Integer(mainPref.getString(getStr(R.string.historyLength), "50"));
         }
     }
 }

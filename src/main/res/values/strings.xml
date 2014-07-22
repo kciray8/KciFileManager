@@ -34,4 +34,5 @@
     <string name="dcim">DCIM</string>
     <string name="downloads">Downloads</string>
     <string name="delete_bookmark">Delete bookmark</string>
+    <string name="history">History</string>
 </resources>

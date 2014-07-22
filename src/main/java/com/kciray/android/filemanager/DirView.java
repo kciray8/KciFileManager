@@ -38,11 +38,13 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.common.io.Files;
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.ViewUtils;
-import com.kciray.android.commons.io.FileUtils;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,6 +164,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         this.directory = directory;
         rebuildDir();
         BookmarkManager.getInstance().updateBookmarkButton(directory);
+        MainActivity.addToHistory(directory);
     }
 
     public void goUp() {
@@ -336,6 +339,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
 
         runParallel(() -> {
             final long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
+
             final String strSize = String.format("%,d %s", dirSize, "[Byte]");
 
             activity.runOnUiThread(() -> {

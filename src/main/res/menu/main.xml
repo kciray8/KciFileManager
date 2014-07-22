@@ -26,6 +26,10 @@
         a:showAsAction="never"
         a:title="Утилиты">
     </item-->
+    <item
+        a:id="@+id/history"
+        a:showAsAction="never"
+        a:title="@string/history"/>
 
     <item
         a:id="@+id/settings"
