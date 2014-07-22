@@ -322,8 +322,10 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             startActivity(intent);
         });
 
-        addMenuAction(menu, R.id.about, () -> ActivityUtils.start(AboutActivity.class));
-
+        addMenuAction(menu, R.id.about, () -> {
+            ActivityUtils.start(AboutActivity.class);
+            overridePendingTransition(R.anim.rotate_in, 0);
+        });
 
         return super.onCreateOptionsMenu(menu);
     }

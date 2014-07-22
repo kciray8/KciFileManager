@@ -8,17 +8,23 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class AboutActivity extends Activity{
+public class AboutActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.about);
-        TextView textView = (TextView)findViewById(R.id.text);
+        TextView textView = (TextView) findViewById(R.id.text);
         String html = getResources().getString(R.string.aboutText);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
         textView.setText(Html.fromHtml(html));
 
         Button onClose = (Button) findViewById(R.id.close);
         onClose.setOnClickListener(v -> finish());
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(0, R.anim.rotate_out);
     }
 }
