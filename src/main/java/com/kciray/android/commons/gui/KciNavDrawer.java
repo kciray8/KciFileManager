@@ -99,7 +99,7 @@ public class KciNavDrawer<Category extends Enum> extends DrawerLayout {
     }
 
     public ActionBarDrawerToggle addButtonToActivity(ActionBarActivity activity) {
-        ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(activity, this, R.drawable.ic_drawer, -1, -1);
+        ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(activity, this, R.drawable.ic_drawer, 0, 0);
         this.setDrawerListener(drawerToggle);
 
         activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -232,7 +232,7 @@ class DrawerMainAdapter extends BaseAdapter {
                         elements.remove(element.topSeparator);
                     } else {
                         DrawerElement nextElement = getNext(element);
-                        if(nextElement != null) {
+                        if (nextElement != null) {
                             elements.remove(nextElement.topSeparator);
                             nextElement.topSeparator = null;
                         }
@@ -247,12 +247,12 @@ class DrawerMainAdapter extends BaseAdapter {
         }
     }
 
-    private DrawerElement getNext(DrawerElement prev){
+    private DrawerElement getNext(DrawerElement prev) {
         int indexOfPrev = elements.indexOf(prev);
         int indexNext = indexOfPrev + 2;
-        if(indexNext < elements.size()) {
+        if (indexNext < elements.size()) {
             return elements.get(elements.indexOf(prev) + 2);
-        }else{
+        } else {
             return null;
         }
     }

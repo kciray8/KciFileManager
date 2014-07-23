@@ -50,6 +50,7 @@ import com.kciray.android.commons.sys.AppUtils;
 import com.kciray.android.commons.sys.BundleUtils;
 import com.kciray.android.commons.sys.Global;
 import com.kciray.android.commons.sys.IntentUtils;
+import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
@@ -191,7 +192,6 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         configBottomBar();
     }
 
-
     private void configBottomBar() {
         View bottomBar = findViewById(R.id.bottom_bar);
         ImageButton refreshButton = (ImageButton) bottomBar.findViewById(R.id.refresh_button);
@@ -239,7 +239,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 break;
         }
     }
-
+    
     private View getIVBookmark(String title, String description) {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View infoView = inflater.inflate(R.layout.drawer_bookmark, null);
