@@ -38,13 +38,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.kciray.android.commons.gui.ActivityUtils;
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
+import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.sys.AppUtils;
 import com.kciray.android.commons.sys.Global;
 import com.kciray.android.commons.sys.L;
@@ -175,6 +178,16 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         mainPref.registerOnSharedPreferenceChangeListener(this);
 
         bookmarkManager.addBookmarksToNavDrawer();
+        configBottomBar();
+    }
+
+    private void configBottomBar() {
+        View bottomBar = findViewById(R.id.bottom_bar);
+        ImageButton refreshButton = (ImageButton) bottomBar.findViewById(R.id.refresh_button);
+        refreshButton.setOnClickListener(v->{
+            activeDirView.refresh();
+            ToastUtils.show(getString(R.string.update_done));
+        });
     }
 
     public DBHelper getDbHelper() {
@@ -383,6 +396,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 break;
             case CALC_SIZE:
                 activeDirView.calcFolderSize(itemIndex);
+                break;
+            case OPEN_INTENT:
+                activeDirView.openIntent(itemIndex);
                 break;
         }
 

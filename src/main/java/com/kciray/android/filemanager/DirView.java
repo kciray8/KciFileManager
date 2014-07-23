@@ -26,6 +26,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
@@ -275,6 +276,11 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         menu.setHeaderIcon(R.drawable.info);
 
         if (!isRoot) {
+            menu.add(Menu.NONE, FileMenu.OPEN_INTENT.ordinal(),
+                    Menu.NONE, L.tr(R.string.open_in_other_program));
+        }
+
+        if (!isRoot) {
             menu.add(Menu.NONE, FileMenu.DELETE.ordinal(),
                     Menu.NONE, L.tr(R.string.action_delete));
         }
@@ -350,6 +356,13 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         });
     }
 
+    public void openIntent(int position) {
+        final DirElement dirElement = adapter.getItem(position);
+        File file = dirElement.getFile();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(file));
+        MainActivity.getInstance().startActivity(intent);
+    }
+
     boolean recursiveDelete(File f) {
         if (f.isDirectory()) {
             File[] listFiles = f.listFiles();
@@ -399,6 +412,10 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
     }
 
 
+    public void refresh() {
+        FileScanner.clear();
+        goToDir(directory);
+    }
 }
 
 class DirViewAdapter extends BaseAdapter {

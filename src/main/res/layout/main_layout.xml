@@ -31,13 +31,26 @@
             a:id="@+id/add_bookmark_button"
             a:layout_width="wrap_content"
             a:layout_height="wrap_content"
-            a:paddingLeft="@dimen/smallMargin"
-            a:paddingRight="@dimen/smallMargin"
-            a:paddingTop="@dimen/smallMargin"
-            a:paddingBottom="@dimen/smallMargin"
-            a:src="@drawable/gray_star"
+            a:paddingLeft="@dimen/half_small_margin"
+            a:paddingRight="@dimen/half_small_margin"
+            a:paddingTop="@dimen/small_margin"
+            a:paddingBottom="@dimen/small_margin"
+            a:src="@drawable/ic_gray_star"
             a:background="?selectableItemBackground"
             a:layout_alignParentRight="true"
+            a:contentDescription="@string/addBookmark" />
+
+        <ImageButton
+            a:id="@+id/refresh_button"
+            a:layout_width="wrap_content"
+            a:layout_toLeftOf="@id/add_bookmark_button"
+            a:layout_height="wrap_content"
+            a:paddingLeft="@dimen/half_small_margin"
+            a:paddingRight="@dimen/half_small_margin"
+            a:paddingTop="@dimen/small_margin"
+            a:paddingBottom="@dimen/small_margin"
+            a:src="@drawable/ic_refresh"
+            a:background="?selectableItemBackground"
             a:contentDescription="@string/addBookmark" />
     </RelativeLayout>
 </LinearLayout>

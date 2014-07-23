@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FileScanner {
-    static Map<String, DirElement> dirToView = new HashMap<>();
+    private static Map<String, DirElement> dirToView = new HashMap<>();
 
     static boolean cachedView(File file) {
         return dirToView.containsKey(file.getAbsolutePath());
@@ -44,5 +44,9 @@ public class FileScanner {
 
     static void deleteFromCache(File file){
         dirToView.remove(file.getAbsolutePath());
+    }
+
+    static void clear(){
+        dirToView.clear();
     }
 }

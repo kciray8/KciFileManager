@@ -94,9 +94,9 @@ public class BookmarkManager extends BroadcastReceiver {
         if (mainActivity.getCurrentDir().equals(dir)) {
             Bookmark bookmark = getBookmark(dir);
             if (bookmark != null) {
-                addBookmarkButton.setImageResource(R.drawable.blue_star);
+                addBookmarkButton.setImageResource(R.drawable.ic_blue_star);
             } else {
-                addBookmarkButton.setImageResource(R.drawable.gray_star);
+                addBookmarkButton.setImageResource(R.drawable.ic_gray_star);
             }
         }
     }
