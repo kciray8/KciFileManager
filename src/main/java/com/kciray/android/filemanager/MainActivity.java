@@ -40,16 +40,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Ints;
+import com.kciray.android.commons.compat.Eclair;
 import com.kciray.android.commons.gui.ActivityUtils;
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
 import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.sys.AppUtils;
+import com.kciray.android.commons.sys.BundleUtils;
 import com.kciray.android.commons.sys.Global;
+import com.kciray.android.commons.sys.IntentUtils;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
 
@@ -57,11 +57,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.kciray.android.commons.sys.KLog.v;
-
 
 public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>, SharedPreferences.OnSharedPreferenceChangeListener {
     public static final int REQUEST_CODE_TO_HISTORY = 1;
+
+    //Extras
+    public static final String EXTRA_FILE_PATH = "com.kciray.intent.extra.EXTRA_FILE_PATH";
 
     private DirView activeDirView;
     private static int historyMaxSize;
@@ -103,6 +104,8 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        IntentUtils.outExtras(getIntent());
+        BundleUtils.outExtras(savedInstanceState);
         mainActivity = this;
         Global.setContext(this);
         dbHelper = new DBHelper();
@@ -128,6 +131,13 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             dir = mainPref.getString(getStr(R.string.autoSaveLastDirStr), rootSd);
         } else {
             dir = rootSd;
+        }
+
+        Intent launchIntent = getIntent();
+        if(launchIntent != null){
+            if(launchIntent.hasExtra(EXTRA_FILE_PATH)){
+                dir = launchIntent.getStringExtra(EXTRA_FILE_PATH);
+            }
         }
 
         devMode = mainPref.getBoolean(getStr(R.string.devMode), false);
@@ -162,10 +172,10 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         File sdCard = Environment.getExternalStorageDirectory();
         addElementToCategory(DrawerCategories.SYSTEM, R.string.sd_card, sdCard);
 
-        File DCIM = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DCIM);
+        File DCIM = new File(Environment.getExternalStorageDirectory(), Eclair.DIRECTORY_DCIM);
         addElementToCategory(DrawerCategories.SYSTEM, R.string.dcim, DCIM);
 
-        File downloads = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOWNLOADS);
+        File downloads = new File(Environment.getExternalStorageDirectory(), Eclair.DIRECTORY_DOWNLOADS);
         addElementToCategory(DrawerCategories.SYSTEM, R.string.downloads, downloads);
 
         if (devMode) {
@@ -180,6 +190,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         bookmarkManager.addBookmarksToNavDrawer();
         configBottomBar();
     }
+
 
     private void configBottomBar() {
         View bottomBar = findViewById(R.id.bottom_bar);
@@ -399,6 +410,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 break;
             case OPEN_INTENT:
                 activeDirView.openIntent(itemIndex);
+                break;
+            case SEND_TO_HOME_SCREEN:
+                activeDirView.sendToHomeScreen(itemIndex);
                 break;
         }
 

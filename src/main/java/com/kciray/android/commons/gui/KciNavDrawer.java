@@ -17,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.kciray.android.commons.sys.Global;
+import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.filemanager.R;
 
 import java.util.LinkedList;
@@ -227,14 +228,32 @@ class DrawerMainAdapter extends BaseAdapter {
         for (DrawerElement element : elements) {
             if ((element.categoryCode == categoryId) && (element.data != null)) {
                 if (element.data.equals(data)) {
-                    elements.remove(element);
                     if (element.topSeparator != null) {
                         elements.remove(element.topSeparator);
+                    } else {
+                        DrawerElement nextElement = getNext(element);
+                        if(nextElement != null) {
+                            elements.remove(nextElement.topSeparator);
+                            nextElement.topSeparator = null;
+                        }
                     }
+
+                    elements.remove(element);
+
                     notifyDataSetChanged();
                     break;
                 }
             }
+        }
+    }
+
+    private DrawerElement getNext(DrawerElement prev){
+        int indexOfPrev = elements.indexOf(prev);
+        int indexNext = indexOfPrev + 2;
+        if(indexNext < elements.size()) {
+            return elements.get(elements.indexOf(prev) + 2);
+        }else{
+            return null;
         }
     }
 }

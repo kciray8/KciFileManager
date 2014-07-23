@@ -33,8 +33,10 @@
     <string name="delete_bm_success">Bookmark was delete</string>
     <string name="dcim">DCIM</string>
     <string name="downloads">Downloads</string>
-    <string name="delete_bookmark">Delete bookmark</string>
+    <string name="delete_bookmark">Delete</string>
     <string name="history">History</string>
     <string name="open_in_other_program">Open in other program</string>
     <string name="update_done">Update done!</string>
+    <string name="create_shortcut">Create shortcut</string>
+    <string name="create_shortcut_wait">Creating shortcut. Wait please…</string>
 </resources>

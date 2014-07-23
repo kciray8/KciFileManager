@@ -23,6 +23,8 @@ package com.kciray.android.filemanager;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.appwidget.AppWidgetHost;
+import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,9 +40,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.io.Files;
 import com.kciray.android.commons.gui.DialogUtils;
+import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.gui.ViewUtils;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.LBroadManager;
@@ -139,7 +143,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         View bottomBar = mainLayout.findViewById(R.id.bottom_bar);
         addBookmarkButton = (ImageButton) bottomBar.findViewById(R.id.add_bookmark_button);
         BookmarkManager.getInstance().setAddBookmarkButton(addBookmarkButton);
-        addBookmarkButton.setOnClickListener( v -> {
+        addBookmarkButton.setOnClickListener(v -> {
             if (BookmarkManager.getInstance().getBookmark(directory) == null) {
                 DialogUtils.inputString(L.tr(R.string.input_bookmark_name), directory.getName(),
                         str -> {
@@ -149,8 +153,8 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                             LBroadManager.send(addNewBookmark);
                         }
                 );
-            }else{
-                DialogUtils.askQuestion(L.tr(R.string.confirm),L.tr(R.string.delete_bookmark_q), () -> {
+            } else {
+                DialogUtils.askQuestion(L.tr(R.string.confirm), L.tr(R.string.delete_bookmark_q), () -> {
                     Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
                     delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
                     LBroadManager.send(delBookmark);
@@ -299,6 +303,9 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
             menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
                     Menu.NONE, "Подсчитать размер папки");
         }
+
+        menu.add(Menu.NONE, FileMenu.SEND_TO_HOME_SCREEN.ordinal(),
+                Menu.NONE, getContext().getString(R.string.create_shortcut));
     }
 
     public void deleteItem(int position) {
@@ -361,6 +368,24 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         File file = dirElement.getFile();
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(file));
         MainActivity.getInstance().startActivity(intent);
+    }
+
+    public void sendToHomeScreen(int position) {
+        final DirElement dirElement = adapter.getItem(position);
+        File file = dirElement.getFile();
+
+        Intent shortcutIntent = new Intent(getContext(), MainActivity.class);
+        //TODO fix bug - when I two times click on shortcut (And app not executing) - onCreate not call
+        shortcutIntent.putExtra(MainActivity.EXTRA_FILE_PATH, file.getAbsolutePath());
+
+        Intent addIntent = new Intent();
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, file.getName());
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getContext(), R.drawable.folder));
+        addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+
+        getContext().sendBroadcast(addIntent);
+        ToastUtils.show(getContext().getString(R.string.create_shortcut_wait));
     }
 
     boolean recursiveDelete(File f) {
