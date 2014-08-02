@@ -65,6 +65,8 @@
     <orderEntry type="library" exported="" name="appcompat-v7-19.1.0" level="project" />
     <orderEntry type="library" exported="" name="guava-17.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-19.1.0" level="project" />
+    <orderEntry type="library" exported="" name="annotations" level="project" />
+    <orderEntry type="library" exported="" name="RootTools" level="project" />
     <orderEntry type="library" exported="" name="commons-io-2.4" level="project" />
   </component>
 </module>

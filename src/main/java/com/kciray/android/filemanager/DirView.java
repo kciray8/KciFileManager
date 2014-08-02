@@ -23,12 +23,11 @@ package com.kciray.android.filemanager;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.appwidget.AppWidgetHost;
-import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.text.ClipboardManager;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;
@@ -40,19 +39,18 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.common.io.Files;
 import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.gui.ViewUtils;
+import com.kciray.android.commons.sys.Global;
+import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
-import com.kciray.android.commons.sys.LBroadManager;
-
-import org.apache.commons.io.FileUtils;
+import com.kciray.android.commons.sys.root.FileMgr;
+import com.kciray.commons.io.ExFile;
+import com.kciray.commons.lang.ObjectUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,11 +77,12 @@ class ScrollPosition {
 }
 
 public class DirView extends FrameLayout implements AbsListView.OnScrollListener {
-    public File getDirectory() {
+    public ExFile getDirectory() {
         return directory;
     }
 
-    private File directory;
+    private ExFile directory;
+    private ExFile newDirectory;
     private Context context;
     private DirViewAdapter adapter;
 
@@ -122,15 +121,9 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
             if (dirElement.isBackButton()) {
                 goUp();
             } else {
-                File dirElementFile = dirElement.getFile();
-                if (dirElementFile.isDirectory()) {
-                    dirElementFile.listFiles();
-
-                    if (dirElementFile.listFiles() != null) {
-                        goToDir(dirElementFile);
-                    } else {
-                        DialogUtils.toast(L.tr(R.string.error_open_folder));
-                    }
+                ExFile dirElementFile = dirElement.getFile();
+                if (dirElementFile.isDir()) {
+                    goToDir(dirElementFile);
                 }
             }
         });
@@ -147,34 +140,27 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
             if (BookmarkManager.getInstance().getBookmark(directory) == null) {
                 DialogUtils.inputString(L.tr(R.string.input_bookmark_name), directory.getName(),
                         str -> {
-                            Intent addNewBookmark = new Intent(BookmarkManager.ADD_NEW_BOOKMARK);
-                            addNewBookmark.putExtra(BookmarkManager.BOOKMARK_LABEL, str);
-                            addNewBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
-                            LBroadManager.send(addNewBookmark);
+                            BookmarkManager.getInstance().addBookmark(str, directory.getFullPath());
                         }
                 );
             } else {
                 DialogUtils.askQuestion(L.tr(R.string.confirm), L.tr(R.string.delete_bookmark_q), () -> {
-                    Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
-                    delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, directory.getAbsoluteFile());
-                    LBroadManager.send(delBookmark);
+                    BookmarkManager.getInstance().deleteBookmark(directory.getFullPath());
                 });
             }
         });
 
-        directory = new File(dir);
+        directory = FileMgr.getFile(dir);
     }
 
-    public void goToDir(File directory) {
-        this.directory = directory;
+    public void goToDir(ExFile directory) {
+        newDirectory = directory;
         rebuildDir();
-        BookmarkManager.getInstance().updateBookmarkButton(directory);
-        MainActivity.addToHistory(directory);
     }
 
     public void goUp() {
-        if (directory.getParentFile() != null) {
-            goToDir(directory.getParentFile());
+        if (directory.getParent() != null) {
+            goToDir(directory.getParent());
         }
     }
 
@@ -182,58 +168,66 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         statusView.setText(str);
     }
 
-    private void rebuildDir() {
-        adapter.clear();
-        backNavElement = DirElement.getBackNavElement(context, directory, this);
-        adapter.addElement(backNavElement);
+    public void rebuildDir() {
+        newDirectory = FileMgr.getFile(newDirectory.getFullPath());//Renovate temp dir (StdDir or ShellDir)
+        KLog.v("^^^" + ObjectUtils.readFields(newDirectory));
+        newDirectory.loadDirInfo(() -> {
+            KLog.v("---" + ObjectUtils.readFields(newDirectory));
+            newDirectory.getSubDirsAsync(list -> {
+                if (list != null) {
+                    directory = newDirectory;
 
-        File[] subFiles = null;
-        subFiles = directory.listFiles();
+                    Global.getContext().runOnUiThread(() -> {
+                        adapter.clear();
+                        backNavElement = DirElement.getBackNavElement(context, directory, this);
+                        adapter.addElement(backNavElement);
 
-        if (subFiles != null) {
-            for (File dirElementFile : subFiles) {
-                DirElement dirElement;
+                        for (ExFile dirElementFile : list) {
+                            DirElement dirElement;
 
-                if (FileScanner.cachedView(dirElementFile)) {
-                    dirElement = FileScanner.getCachedView(dirElementFile);
+                            if (FileScanner.cachedView(dirElementFile.getFullPath())) {
+                                dirElement = FileScanner.getCachedView(dirElementFile.getFullPath());
+                            } else {
+                                dirElement = new DirElement(context, dirElementFile, this);
+                                FileScanner.addToCache(dirElementFile.getFullPath(), dirElement);
+                            }
+
+                            adapter.addElement(dirElement);
+                        }
+
+                        statusView.setText(directory.getFullPath());
+                        adapter.autoSort();
+                        adapter.notifyDataSetChanged();
+
+                        BookmarkManager.getInstance().updateBookmarkButton(directory);
+                        MainActivity.addToHistory(directory);
+                    });
                 } else {
-                    dirElement = new DirElement(context, dirElementFile, this);
-                    FileScanner.addToCache(dirElementFile, dirElement);
+                    ToastUtils.show(getContext().getString(R.string.access_denied));
+                    newDirectory = null;
                 }
-
-                adapter.addElement(dirElement);
-            }
-        }
-
-        statusView.setText(directory.toString());
-        adapter.autoSort();
-        adapter.notifyDataSetChanged();
-
-        if (pathToScroll.containsKey(directory.getAbsolutePath())) {
-            ScrollPosition scrollPosition = pathToScroll.get(directory.getAbsolutePath());
-            //scrollPosition.restore(listView);//Intermitted!!!
-            //TODO - fix!
-        }
-    }
-
-    public void setDirectory(String directory) {
-        this.directory = new File(directory);
+            });
+        });
     }
 
     public void addNewFolder() {
         DialogUtils.inputString(L.tr(R.string.enter_name_new_folder), str -> {
-            File newFile = new File(directory, str);
-            boolean success = newFile.mkdir();
-
-            if (success) {
-                dynamicallyAddFile(newFile);
-            }
+            ExFile newFile = FileMgr.getFile(directory, str);
+            newFile.makeDir(success -> {
+                if (success) {
+                    newFile.loadDirInfo(() -> {
+                        Global.getContext().runOnUiThread(() -> {
+                            dynamicallyAddFile(newFile);
+                        });
+                    });
+                }
+            });
         });
     }
 
-    private void dynamicallyAddFile(File file) {
+    private void dynamicallyAddFile(ExFile file) {
         DirElement dirElement = new DirElement(context, file, this);
-        FileScanner.addToCache(file, dirElement);
+        FileScanner.addToCache(file.getFullPath(), dirElement);
         adapter.addElement(dirElement);
         adapter.notifyDataSetChanged();
         adapter.autoSort();
@@ -248,33 +242,18 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         }
     }
 
-    public void addNewFile() {
-        DialogUtils.inputString(L.tr(R.string.enter_name_new_file), str -> {
-            File newFile = new File(directory, str);
-            boolean success = false;
-            try {
-                success = newFile.createNewFile();
-                if (success) {
-                    dynamicallyAddFile(newFile);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
     public void handleContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         if (v == listView) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             DirElement element = adapter.getItem(info.position);
 
-            File file = element.getFile();
+            ExFile file = element.getFile();
             showActionsForFile(file, menu);
         }
     }
 
-    private void showActionsForFile(File file, ContextMenu menu) {
-        boolean isRoot = file.getAbsolutePath().equals("/");
+    private void showActionsForFile(ExFile file, ContextMenu menu) {
+        boolean isRoot = file.getFullPath().equals("/");
 
         menu.setHeaderTitle(L.tr(R.string.actions));
         menu.setHeaderIcon(R.drawable.info);
@@ -289,7 +268,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                     Menu.NONE, L.tr(R.string.action_delete));
         }
 
-        if (!file.isDirectory()) {
+        if (!file.isDir()) {
             menu.add(Menu.NONE, FileMenu.PROPERTIES.ordinal(),
                     Menu.NONE, L.tr(R.string.action_properties));
         }
@@ -299,13 +278,16 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                     Menu.NONE, "Переименовать");
         }
 
-        if ((file != null) && (file.isDirectory())) {
+        if ((file != null) && (file.isDir())) {
             menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
                     Menu.NONE, "Подсчитать размер папки");
         }
 
         menu.add(Menu.NONE, FileMenu.SEND_TO_HOME_SCREEN.ordinal(),
                 Menu.NONE, getContext().getString(R.string.create_shortcut));
+
+        menu.add(Menu.NONE, FileMenu.COPY_FULL_PATH.ordinal(),
+                Menu.NONE, getContext().getString(R.string.copy_full_path));
     }
 
     public void deleteItem(int position) {
@@ -317,19 +299,19 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
                     if (dirElement.isBackButton()) {
                         goUp();
                     }
-                    boolean success = recursiveDelete(dirElement.getFile());
+                    boolean success = recursiveDelete(new File(dirElement.getFile().getFullPath()));
                     if (success) {
                         dynamicallyRemoveDirElement(dirElement);
                     } else {
-                        DialogUtils.toast(L.tr(R.string.error_delete_file));
+                        ToastUtils.show(L.tr(R.string.error_delete_file));
                     }
                 }
         );
     }
 
-    private void findAndDeleteViewWithFile(File file) {
+    private void findAndDeleteViewWithFile(ExFile file) {
         for (DirElement element : adapter.elements) {
-            if (element.getFile().getAbsolutePath().equals(file.getAbsolutePath())) {
+            if (element.getFile().getFullPath().equals(file.getFullPath())) {
                 adapter.removeElement(element);
                 adapter.notifyDataSetChanged();
                 return;
@@ -337,46 +319,44 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         }
     }
 
-    public static void runParallel(Runnable runnable) {
-        new Thread(runnable).start();
-    }
-
     public void calcFolderSize(int position) {
-        final DirElement dirElement = adapter.getItem(position);
-        File file = dirElement.getFile();
-        boolean isRoot = file.getAbsolutePath().equals("/");
+        DirElement dirElement = adapter.getItem(position);
+        ExFile file = dirElement.getFile();
+        boolean isRoot = file.getFullPath().equals("/");
         String dirName = isRoot ? "/" : dirElement.getFile().getName();
 
         final ProgressDialog progressDialog = DialogUtils.showProgressDialog(
                 "Подсчёт размера для папки " + dirName);
 
-        runParallel(() -> {
-            final long dirSize = FileUtils.sizeOfDirectory(dirElement.getFile());
-
+        file.getDirSize(dirSize -> {
             final String strSize = String.format("%,d %s", dirSize, "[Byte]");
-
+            KLog.v("&77777");
             activity.runOnUiThread(() -> {
                 progressDialog.cancel();
                 DialogUtils.showMessage("Размер директории:", strSize);
-                dirElement.setFileSize(dirSize);
+            });
+        }, () -> {//On deny
+            activity.runOnUiThread(() -> {
+                progressDialog.cancel();
+                DialogUtils.showMessage("Размер директории:", "Требуются root-права!");
             });
         });
     }
 
     public void openIntent(int position) {
         final DirElement dirElement = adapter.getItem(position);
-        File file = dirElement.getFile();
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(file));
+        ExFile file = dirElement.getFile();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromFile(file.toFile()));
         MainActivity.getInstance().startActivity(intent);
     }
 
     public void sendToHomeScreen(int position) {
         final DirElement dirElement = adapter.getItem(position);
-        File file = dirElement.getFile();
+        ExFile file = dirElement.getFile();
 
         Intent shortcutIntent = new Intent(getContext(), MainActivity.class);
         //TODO fix bug - when I two times click on shortcut (And app not executing) - onCreate not call
-        shortcutIntent.putExtra(MainActivity.EXTRA_FILE_PATH, file.getAbsolutePath());
+        shortcutIntent.putExtra(MainActivity.EXTRA_FILE_PATH, file.getFullPath());
 
         Intent addIntent = new Intent();
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
@@ -401,7 +381,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
     public void showProp(int position) {
         DirElement dirElement = adapter.getItem(position);
 
-        String message = L.tr(R.string.size) + " = " + dirElement.getFile().length() + " " + L.tr(R.string.bytes);
+        String message = L.tr(R.string.size) + " = " + dirElement.getFile().getSize() + " " + L.tr(R.string.bytes);
         DialogUtils.showMessage(L.tr(R.string.action_properties), message);
     }
 
@@ -415,19 +395,20 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
 
     }
 
-    public void updateRootDirectory(File file) {
+    public void updateRootDirectory(ExFile file) {
         directory = file;
-        setStatus(directory.toString());
+        setStatus(directory.getFullPath());
         //Update file path
         for (DirElement dirElement : adapter.elements) {
-            dirElement.setFile(new File(directory, dirElement.getFile().getName()));
+            ExFile exFile = FileMgr.getFile(directory.getFullPath());
+            dirElement.setFile(exFile.append(dirElement.getFile().getName()));
         }
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         if (scrollState == SCROLL_STATE_IDLE) {
-            String path = directory.getAbsolutePath();
+            String path = directory.getFullPath();
             pathToScroll.put(path, new ScrollPosition(listView));
         }
     }
@@ -440,6 +421,17 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
     public void refresh() {
         FileScanner.clear();
         goToDir(directory);
+    }
+
+    public void copyFullPath(int position) {
+        final DirElement dirElement = adapter.getItem(position);
+        ExFile file = dirElement.getFile();
+        String fullPath = file.getFullPath();
+
+        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboard.setText(fullPath);
+
+        ToastUtils.show(String.format(getContext().getString(R.string.path_was_copy), fullPath));
     }
 }
 

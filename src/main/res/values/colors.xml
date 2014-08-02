@@ -6,4 +6,8 @@
     <color name="gray2">#ffbababa</color>
     <color name="gray3">#ffececec</color>
 
+    <color name="orange">#ffa1750f</color>
+    <color name="green">#ff2e6108</color>
+
+    <color name="blue1">#ff4488b7</color>
 </resources>

@@ -30,5 +30,10 @@
     <string name="update_done">Обновление успешно!</string>
     <string name="create_shortcut">Создать ярлык</string>
     <string name="create_shortcut_wait">Creating shortcut. Wait please...</string>
+    <string name="input_path">Input path</string>
+    <string name="copy_full_path">Copy full path</string>
+    <string name="path_was_copy">Path \'%s\' was copy to clopboard</string>
+    <string name="need_root">Need root access!</string>
+    <string name="access_denied">Доступ закрыт!</string>
 
 </resources>

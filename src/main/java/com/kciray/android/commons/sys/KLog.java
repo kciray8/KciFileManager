@@ -6,11 +6,20 @@ import java.util.Calendar;
 
 public final class KLog {
     private static final String TAG = "KLog";
+    private static StringBuilder stringBuilder = new StringBuilder();
 
     public static void v(Object object) {
         String messageAndLocation = getLocation() + ((object != null) ? object.toString() : "null");
 
         android.util.Log.v(TAG, messageAndLocation);
+        stringBuilder.append(messageAndLocation);
+    }
+    public static void mark() {
+        v("call...");
+    }
+
+    public static String getLog(){
+        return stringBuilder.toString();
     }
 
     private static String getLocation() {
@@ -23,7 +32,8 @@ public final class KLog {
                 if (found) {
                     if (!trace.getClassName().startsWith(className)) {
                         Class<?> clazz = Class.forName(trace.getClassName());
-                        return "at " +  clazz.getPackage().getName() + "(" + getClassName(clazz) + ".java:" + trace.getLineNumber() + ") "  + ": ";
+                        return "at " +  clazz.getPackage().getName() + "(" + getClassName(clazz) +
+                                ".java:" + trace.getLineNumber() + ")."+ trace.getMethodName()  + "(): ";
                     }
                 } else if (trace.getClassName().startsWith(className)) {
                     found = true;

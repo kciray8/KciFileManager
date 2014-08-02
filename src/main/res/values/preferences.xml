@@ -4,6 +4,7 @@
     <string name="autoSaveLastDir">autoSaveLastDir</string>
     <string name="devMode">devMode</string>
     <string name="historyLength">historyLength</string>
+    <string name="engine">engine</string>
     
     <!-- Non GUI -->
     <string name="autoSaveLastDirStr">autoSaveLastDirStr</string>

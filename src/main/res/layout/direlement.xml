@@ -35,6 +35,17 @@
         a:textSize="10sp"
         a:layout_alignParentBottom="true"
         a:layout_alignParentRight="true"
+        a:layout_marginRight="5dp"
         a:id="@+id/size"/>
+
+    <TextView
+        a:layout_height="wrap_content"
+        a:text="@string/test_str"
+        a:layout_width="wrap_content"
+        a:textSize="10sp"
+        a:layout_alignParentBottom="true"
+        a:textColor="@color/blue1"
+        a:layout_alignLeft="@id/path"
+        a:id="@+id/permission"/>
 
 </RelativeLayout>

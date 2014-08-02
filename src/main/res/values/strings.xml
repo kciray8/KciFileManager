@@ -39,4 +39,9 @@
     <string name="update_done">Update done!</string>
     <string name="create_shortcut">Create shortcut</string>
     <string name="create_shortcut_wait">Creating shortcut. Wait please…</string>
+    <string name="input_path">Input path</string>
+    <string name="copy_full_path">Copy full path</string>
+    <string name="path_was_copy">Path \'%s\' was copy to clopboard</string>
+    <string name="need_root">Need root access!</string>
+    <string name="access_denied">Access denied!</string>
 </resources>

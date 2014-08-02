@@ -28,27 +28,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.kciray.android.commons.gui.DialogUtils;
+import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.sys.L;
+import com.kciray.commons.io.ExFile;
 
-import java.io.File;
 import java.util.Comparator;
 
 public class DirElement {
-    public void setFile(File file) {
+    public void setFile(ExFile file) {
         this.file = file;
     }
 
-    private File file;
+    private ExFile file;
     private View view;
     private boolean backButton;
     private TextView pathText;
     private TextView sizeTextView;
+    private TextView permissionTextView;
     private DirView dirView;
 
     public DirElement(Context context) {
     }
 
-    public DirElement(Context context, File file, DirView dirView) {
+    public DirElement(Context context, ExFile file, DirView dirView) {
         this.file = file;
         this.dirView = dirView;
 
@@ -61,44 +63,48 @@ public class DirElement {
         sizeTextView = (TextView) view.findViewById(R.id.size);
         sizeTextView.setText("");
 
+        permissionTextView = (TextView) view.findViewById(R.id.permission);
+
         pathText = (TextView) view.findViewById(R.id.path);
         pathText.setText(text);
 
-        if (file.isDirectory()) {
+        if (file.isDir()) {
             ImageView imageView = (ImageView) view.findViewById(R.id.icon);
             imageView.setImageResource(R.drawable.folder);
+        }
+        setFileSize(file.getShortSize());
+
+        if (file.getPerm() != null) {
+            setFilePermission(file.getPerm());
         } else {
-            long fileSize = file.length();
-            setFileSize(fileSize);
+            setFilePermission("");
         }
     }
 
-    public void setFileSize(long fileSize) {
-        String formFileSize = String.format("%,d %s", fileSize, "[Byte]");
-        sizeTextView.setText(formFileSize);
+    public void setFileSize(String fileSize) {
+        sizeTextView.setText(fileSize);
+    }
+
+    public void setFilePermission(String permission) {
+        permissionTextView.setText(permission);
     }
 
     public void rename() {
         DialogUtils.inputString("Введите новое имя", file.getName(), str -> {
-            File oldFile = file;
-            File newFile = new File(file.getParent(), str);
-            boolean success = file.renameTo(newFile);
-            if (success) {
-                file = newFile;
-                if (!isBackButton()) {
-                    pathText.setText(str);
+            file.changeName(str, success -> {
+                if (success) {
+                    MainActivity.getInstance().runOnUiThread(() -> {
+                        pathText.setText(str);
+                    });
                 } else {
-                    FileScanner.deleteFromCache(oldFile);
-                    dirView.updateRootDirectory(file);
+                    ToastUtils.show("Ошибка при переименовании файла");
                 }
-            } else {
-                DialogUtils.toast("Ошибка при переименовании файла");
-            }
+            });
         });
     }
 
     public boolean isDir() {
-        return file.isDirectory();
+        return file.isDir();
     }
 
     /**
@@ -106,7 +112,7 @@ public class DirElement {
      *
      * @return
      */
-    public static DirElement getBackNavElement(Context context, File file, DirView dirView) {
+    public static DirElement getBackNavElement(Context context, ExFile file, DirView dirView) {
         DirElement dirElement = new DirElement(context, file, dirView);
 
         dirElement.pathText.setText("(...) " + L.tr(R.string.up));
@@ -119,7 +125,7 @@ public class DirElement {
         return view;
     }
 
-    public File getFile() {
+    public ExFile getFile() {
         return file;
     }
 
@@ -145,10 +151,10 @@ public class DirElement {
             }
 
             //One of element - is directory
-            if ((lhs.getFile().isDirectory()) && (!rhs.getFile().isDirectory())) {
+            if ((lhs.getFile().isDir()) && (!rhs.getFile().isDir())) {
                 return -1;
             }
-            if ((!lhs.getFile().isDirectory()) && (rhs.getFile().isDirectory())) {
+            if ((!lhs.getFile().isDir()) && (rhs.getFile().isDir())) {
                 return 1;
             }
 

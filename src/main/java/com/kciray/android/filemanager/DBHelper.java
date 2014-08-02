@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
 import com.kciray.android.commons.sys.Global;
+import com.kciray.android.commons.sys.root.FileMgr;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -69,16 +69,16 @@ class DBHelper extends SQLiteOpenHelper {
         while (cursor.moveToNext()) {
             String name = cursor.getString(1);
             String path = cursor.getString(2);
-            Bookmark bookmark = new Bookmark(name, new File(path));
+            Bookmark bookmark = new Bookmark(name, FileMgr.getFile(path));
             bookmarks.add(bookmark);
         }
 
         return bookmarks;
     }
 
-    public void deleteBookmarkFromDB(File dir) {
+    public void deleteBookmarkFromDB(String dir) {
         String deleteQuery = "DELETE FROM " + BookmarkTable.TABLE_NAME +
-                " WHERE " + BookmarkTable.COLUMN_PATH + "='" + dir.getAbsolutePath() + "'";
+                " WHERE " + BookmarkTable.COLUMN_PATH + "='" + dir + "'";
 
         getDB().execSQL(deleteQuery);
     }

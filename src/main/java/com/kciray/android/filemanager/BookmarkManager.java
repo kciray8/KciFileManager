@@ -1,32 +1,19 @@
 package com.kciray.android.filemanager;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.widget.ImageButton;
 
 import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.sys.L;
-import com.kciray.android.commons.sys.LBroadManager;
+import com.kciray.android.commons.sys.root.FileMgr;
+import com.kciray.commons.io.ExFile;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-public class BookmarkManager extends BroadcastReceiver {
-    public static final String ADD_NEW_BOOKMARK = "com.kciray.android.intent.ADD_NEW_BOOKMARK";
-    public static final String DELETE_BOOKMARK = "com.kciray.android.intent.DELETE_BOOKMARK";
-    public static final String BOOKMARK_LABEL = "label";
-    public static final String BOOKMARK_DIR = "dir";
+public class BookmarkManager{
     private MainActivity mainActivity;
     private List<Bookmark> bookmarkList = new LinkedList<>();
     private static BookmarkManager instance;
-    private boolean lastBtnStateWasOff;
-
-    public void register() {
-        LBroadManager.registerReceiver(this, BookmarkManager.ADD_NEW_BOOKMARK);
-        LBroadManager.registerReceiver(this, BookmarkManager.DELETE_BOOKMARK);
-    }
 
     public void setAddBookmarkButton(ImageButton addBookmarkButton) {
         this.addBookmarkButton = addBookmarkButton;
@@ -55,42 +42,27 @@ public class BookmarkManager extends BroadcastReceiver {
         return instance;
     }
 
-    public void addBookmark(String label, File file) {
-
-    }
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
+    public void addBookmark(String label, String path) {
         MainActivity main = MainActivity.getInstance();
-
-
-        switch (intent.getAction()) {
-            case ADD_NEW_BOOKMARK:
-                String label = intent.getStringExtra(BOOKMARK_LABEL);
-                File dir = (File) intent.getSerializableExtra(BOOKMARK_DIR);
-                Bookmark bookmark = new Bookmark(label, dir);
-
-                bookmarkList.add(bookmark);
-                mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS, label, dir);
-                updateBookmarkButton(dir);
-                main.getDbHelper().addBookmarkToDB(label, dir.getAbsolutePath());
-                ToastUtils.show(String.format(L.tr(R.string.add_bookmark_toast), label));
-
-                break;
-
-            case DELETE_BOOKMARK:
-                File bookmarkFile = (File) intent.getSerializableExtra(BOOKMARK_DIR);
-
-                deleteBookmark(bookmarkFile);
-                mainActivity.removeElementFromCategory(MainActivity.DrawerCategories.BOOKMARKS, bookmarkFile);
-                updateBookmarkButton(bookmarkFile);
-                main.getDbHelper().deleteBookmarkFromDB(bookmarkFile);
-                ToastUtils.show(L.tr(R.string.delete_bm_success));
-                break;
-        }
+        Bookmark bookmark = new Bookmark(label, FileMgr.getFile(path));
+        bookmarkList.add(bookmark);
+        mainActivity.addElementToCategory(MainActivity.DrawerCategories.BOOKMARKS, label, FileMgr.getFile(path));
+        updateBookmarkButton(FileMgr.getFile(path));
+        main.getDbHelper().addBookmarkToDB(label, path);
+        ToastUtils.show(String.format(L.tr(R.string.add_bookmark_toast), label));
     }
 
-    public void updateBookmarkButton(File dir) {
+    public void deleteBookmark(String path){
+        MainActivity main = MainActivity.getInstance();
+        ExFile file = FileMgr.getFile(path);
+        deleteBookmark(file);
+        mainActivity.removeElementFromCategory(MainActivity.DrawerCategories.BOOKMARKS, file);
+        updateBookmarkButton(file);
+        main.getDbHelper().deleteBookmarkFromDB(file.getFullPath());
+        ToastUtils.show(L.tr(R.string.delete_bm_success));
+    }
+
+    public void updateBookmarkButton(ExFile dir) {
         if (mainActivity.getCurrentDir().equals(dir)) {
             Bookmark bookmark = getBookmark(dir);
             if (bookmark != null) {
@@ -101,7 +73,7 @@ public class BookmarkManager extends BroadcastReceiver {
         }
     }
 
-    public Bookmark getBookmark(File dir) {
+    public Bookmark getBookmark(ExFile dir) {
         for (Bookmark bookmark : bookmarkList) {
             if (bookmark.dir.equals(dir)) {
                 return bookmark;
@@ -110,7 +82,7 @@ public class BookmarkManager extends BroadcastReceiver {
         return null;
     }
 
-    public void deleteBookmark(File dir) {
+    public void deleteBookmark(ExFile dir) {
         for (Bookmark bookmark : bookmarkList) {
             if (bookmark.dir.equals(dir)) {
                 bookmarkList.remove(bookmark);
@@ -126,9 +98,9 @@ public class BookmarkManager extends BroadcastReceiver {
 
 class Bookmark {
     String label;
-    File dir;
+    ExFile dir;
 
-    public Bookmark(String label, File dir) {
+    public Bookmark(String label, ExFile dir) {
         this.label = label;
         this.dir = dir;
     }

@@ -47,16 +47,15 @@ import com.kciray.android.commons.gui.DialogUtils;
 import com.kciray.android.commons.gui.KciNavDrawer;
 import com.kciray.android.commons.gui.ToastUtils;
 import com.kciray.android.commons.sys.AppUtils;
-import com.kciray.android.commons.sys.BundleUtils;
 import com.kciray.android.commons.sys.Global;
-import com.kciray.android.commons.sys.IntentUtils;
-import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
-import com.kciray.android.commons.sys.LBroadManager;
+import com.kciray.android.commons.sys.root.FileMgr;
+import com.kciray.commons.io.ExFile;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.kciray.android.commons.sys.KLog.mark;
 
 
 public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnItemClick<MainActivity.DrawerCategories>, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -68,14 +67,14 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     private DirView activeDirView;
     private static int historyMaxSize;
 
-    public static void addToHistory(File file) {
+    public static void addToHistory(ExFile file) {
         if (history.size() == historyMaxSize) {
             history.remove(history.size() - 1);
         }
         history.add(0, file);
     }
 
-    public static List<File> getHistory() {
+    public static List<ExFile> getHistory() {
         return history;
     }
 
@@ -100,20 +99,17 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     boolean devMode;
     BookmarkManager bookmarkManager;
     DBHelper dbHelper;
-    private static List<File> history = new ArrayList<>();
+    private static List<ExFile> history = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        IntentUtils.outExtras(getIntent());
-        BundleUtils.outExtras(savedInstanceState);
         mainActivity = this;
         Global.setContext(this);
         dbHelper = new DBHelper();
 
         bookmarkManager = BookmarkManager.getInstance();
         bookmarkManager.setMainActivity(this);
-        bookmarkManager.register();
         bookmarkManager.loadAllBookmarks();
 
         mainPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -122,7 +118,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             setDefaultPrefForActive();
             mainPref.edit().putBoolean(getStr(R.string.firstLaunch), false).commit();
         }
-        historyMaxSize = new Integer(mainPref.getString(getStr(R.string.historyLength), "50"));
+        historyMaxSize = Integer.valueOf(mainPref.getString(getStr(R.string.historyLength), "50"));
+
+        updateEngine();
 
         String rootSd = Environment.getExternalStorageDirectory().getPath();
         String dir;
@@ -133,17 +131,18 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         } else {
             dir = rootSd;
         }
+        dir = "/";
 
         Intent launchIntent = getIntent();
-        if(launchIntent != null){
-            if(launchIntent.hasExtra(EXTRA_FILE_PATH)){
+        if (launchIntent != null) {
+            if (launchIntent.hasExtra(EXTRA_FILE_PATH)) {
                 dir = launchIntent.getStringExtra(EXTRA_FILE_PATH);
             }
         }
 
         devMode = mainPref.getBoolean(getStr(R.string.devMode), false);
         activeDirView = new DirView(this, dir);
-        activeDirView.goToDir(new File(dir));
+        activeDirView.goToDir(FileMgr.getFile(dir));
 
         navDrawer = new KciNavDrawer<>(this);
         navDrawer.setMainContent(activeDirView);
@@ -154,9 +153,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 final MenuItem itemDelete = popupMenu.getMenu().add(R.string.delete_bookmark);
                 popupMenu.setOnMenuItemClickListener((item) -> {
                             if (item == itemDelete) {
-                                Intent delBookmark = new Intent(BookmarkManager.DELETE_BOOKMARK);
-                                delBookmark.putExtra(BookmarkManager.BOOKMARK_DIR, (File) data);
-                                LBroadManager.send(delBookmark);
+                                BookmarkManager.getInstance().deleteBookmark(((ExFile)data).getFullPath());
                             }
                             return true;
                         }
@@ -167,20 +164,20 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         navDrawer.addCategory(DrawerCategories.SYSTEM, R.string.cat_system);
         navDrawer.addCategory(DrawerCategories.BOOKMARKS, R.string.cat_bookmarks);
 
-        File root = new File("/");
+        ExFile root = FileMgr.getFile("/");
         addElementToCategory(DrawerCategories.SYSTEM, R.string.root, root);
 
-        File sdCard = Environment.getExternalStorageDirectory();
+        ExFile sdCard = FileMgr.getFile(Environment.getExternalStorageDirectory().getAbsolutePath());
         addElementToCategory(DrawerCategories.SYSTEM, R.string.sd_card, sdCard);
 
-        File DCIM = new File(Environment.getExternalStorageDirectory(), Eclair.DIRECTORY_DCIM);
+        ExFile DCIM = FileMgr.getFile(Environment.getExternalStorageDirectory().getAbsolutePath()).append(Eclair.DIRECTORY_DCIM);
         addElementToCategory(DrawerCategories.SYSTEM, R.string.dcim, DCIM);
 
-        File downloads = new File(Environment.getExternalStorageDirectory(), Eclair.DIRECTORY_DOWNLOADS);
+        ExFile downloads = FileMgr.getFile(Environment.getExternalStorageDirectory().getAbsolutePath()).append(Eclair.DIRECTORY_DOWNLOADS);
         addElementToCategory(DrawerCategories.SYSTEM, R.string.downloads, downloads);
 
         if (devMode) {
-            File internalDir = AppUtils.getInternalDir();
+            ExFile internalDir = FileMgr.getFile(AppUtils.getInternalDir());
             addElementToCategory(DrawerCategories.SYSTEM, R.string.internal_dir, internalDir);
         }
 
@@ -192,12 +189,42 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         configBottomBar();
     }
 
+    private void updateEngine() {
+        String engine = mainPref.getString(getStr(R.string.engine), "1");
+        FileMgr.getIns().setPrefEngine(Integer.valueOf(engine));
+
+        String subtitle;
+        if(!FileMgr.getIns().nullShell()){
+            subtitle = "BusyBox mode";
+        }else{
+            subtitle = "";
+        }
+        getSupportActionBar().setSubtitle(subtitle);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
     private void configBottomBar() {
         View bottomBar = findViewById(R.id.bottom_bar);
         ImageButton refreshButton = (ImageButton) bottomBar.findViewById(R.id.refresh_button);
-        refreshButton.setOnClickListener(v->{
+        refreshButton.setOnClickListener(v -> {
             activeDirView.refresh();
             ToastUtils.show(getString(R.string.update_done));
+        });
+
+        ImageButton inputAndNavigateButton = (ImageButton) bottomBar.findViewById(R.id.input_and_navigate_button);
+        inputAndNavigateButton.setOnClickListener(v -> {
+            DialogUtils.inputString(getString(R.string.input_path), path -> {
+                activeDirView.goToDir(FileMgr.getFile(path));
+            });
         });
     }
 
@@ -209,16 +236,16 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         mainPref.edit().putBoolean(getStr(R.string.devMode), false).commit();
     }
 
-    public void addElementToCategory(DrawerCategories category, int titleRes, File file) {
+    public void addElementToCategory(DrawerCategories category, int titleRes, ExFile file) {
         addElementToCategory(category, L.tr(titleRes), file);
     }
 
-    public void addElementToCategory(DrawerCategories category, String title, File file) {
+    public void addElementToCategory(DrawerCategories category, String title, ExFile file) {
         navDrawer.addInfoViewToCategory(category,
-                getIVBookmark(title, file.getAbsolutePath()), file);
+                getIVBookmark(title, file.getFullPath()), file);
     }
 
-    public void removeElementFromCategory(DrawerCategories category, File data) {
+    public void removeElementFromCategory(DrawerCategories category, ExFile data) {
         navDrawer.deleteViewFromCategory(category, data);
     }
 
@@ -229,7 +256,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         switch (categories) {
             case BOOKMARKS:
             case SYSTEM:
-                final File bookmarkFile = (File) data;
+                final ExFile bookmarkFile = (ExFile) data;
                 activeDirView.goToDir(bookmarkFile);
 
                 //TODO - file operation IN OTHER THREAD!!!
@@ -239,7 +266,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 break;
         }
     }
-    
+
     private View getIVBookmark(String title, String description) {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View infoView = inflater.inflate(R.layout.drawer_bookmark, null);
@@ -282,6 +309,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
 
     @Override
     protected void onStop() {
+        mark();
         super.onStop();
         saveLastDir();
     }
@@ -290,13 +318,13 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         boolean autoSaveLastDir = mainPref.getBoolean(getStr(R.string.autoSaveLastDir), true);
 
         if (autoSaveLastDir) {
-            String path = activeDirView.getDirectory().getAbsolutePath();
+            String path = activeDirView.getDirectory().getFullPath();
             String name = getStr(R.string.autoSaveLastDirStr);
             mainPref.edit().putString(name, path).commit();
         }
     }
 
-    public File getCurrentDir() {
+    public ExFile getCurrentDir() {
         return activeDirView.getDirectory();
     }
 
@@ -310,7 +338,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     }
 
     public void goToDirFromHis(int id) {
-        File dir = history.get(id);
+        ExFile dir = history.get(id);
         activeDirView.goToDir(dir);
     }
 
@@ -321,12 +349,6 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         MenuItem showFolderPropItem = menu.findItem(R.id.show_root_actions);
         showFolderPropItem.setOnMenuItemClickListener(item -> {
             openContextMenu(activeDirView.backNavElement.getView());
-            return false;
-        });
-
-        MenuItem addNewFileItem = menu.findItem(R.id.add_new_file);
-        addNewFileItem.setOnMenuItemClickListener(item -> {
-            activeDirView.addNewFile();
             return false;
         });
 
@@ -378,10 +400,6 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         activeDirView.addNewFolder();
     }
 
-    public void addNewFile(MenuItem item) {
-        activeDirView.addNewFile();
-    }
-
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -414,6 +432,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             case SEND_TO_HOME_SCREEN:
                 activeDirView.sendToHomeScreen(itemIndex);
                 break;
+            case COPY_FULL_PATH:
+                activeDirView.copyFullPath(itemIndex);
+                break;
         }
 
         return true;
@@ -425,6 +446,11 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             DialogUtils.askQuestion("Требуется перезапуск!", "Изменения будут доступны только после перезапуска. Перезапустить приложение сейчас?",
                     AppUtils::restart);
         }
+        if (key.equals(getStr(R.string.engine))) {
+            updateEngine();
+            activeDirView.refresh();
+        }
+
         if (key.equals(getStr(R.string.historyLength))) {
             historyMaxSize = new Integer(mainPref.getString(getStr(R.string.historyLength), "50"));
         }

@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.kciray.android.commons.sys.Global;
 import com.kciray.android.commons.sys.L;
@@ -37,11 +36,6 @@ public class DialogUtils {
         });
 
         alert.show();
-    }
-
-    public static void toast(String str) {
-        Toast toast = Toast.makeText(Global.getContext(), str, Toast.LENGTH_SHORT);
-        toast.show();
     }
 
     public static ProgressDialog showProgressDialog(String message) {

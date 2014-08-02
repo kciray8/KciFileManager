@@ -10,6 +10,8 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 
+import com.kciray.commons.io.ExFile;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.List;
 public class HistoryActivity extends ListActivity {
     public static final String EXTRA_ID = "com.kciray.intent.extra.id";
 
-    ArrayAdapter<File> adapter;
+    ArrayAdapter<ExFile> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

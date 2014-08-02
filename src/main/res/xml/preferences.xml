@@ -25,4 +25,12 @@
         a:defaultValue="50"
         a:key="@string/historyLength" />
 
+    <ListPreference
+        a:key="@string/engine"
+        a:defaultValue="1"
+        a:title="Движок"
+        a:summary="Java API или Shell + BusyBox"
+        a:entries="@array/engineList"
+        a:entryValues="@array/counter" />
+
 </PreferenceScreen>
