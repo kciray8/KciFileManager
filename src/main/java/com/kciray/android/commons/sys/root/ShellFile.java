@@ -1,8 +1,11 @@
 package com.kciray.android.commons.sys.root;
 
+import com.kciray.commons.ThreadUtils;
 import com.kciray.commons.core.Consumer;
 import com.kciray.commons.io.BaseExFile;
 import com.kciray.commons.io.ExFile;
+
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.List;
@@ -14,21 +17,24 @@ public class ShellFile extends BaseExFile {
     private String permissions;
     private String shortSize;
     private boolean isDirectory;
+    private boolean loadInfoDone;
 
     public ShellFile(String fullPath) {
-        setFullPath(fullPath);
+        name = FilenameUtils.getName(fullPath);
+        parent = new File(fullPath).getParent();
+        updateFullPath();
     }
 
     private ShellFile() {
     }
 
-    public static ShellFile buildFromLs(String line, String dir) {
+    public static ShellFile buildFromLs(String line, String parentDir) {
         ShellFile file = new ShellFile();
-        buildFromLs(line, dir, file);
+        buildFromLs(line, parentDir, file);
         return file;
     }
 
-    public static void buildFromLs(String line, String dir, ShellFile file) {
+    protected static void buildFromLs(String line, String parentDir, ShellFile file) {
         String name = line.substring(67, line.length()).trim();
         if (name.contains("->")) {
             name = name.substring(0, name.indexOf("->") - 1);
@@ -38,14 +44,17 @@ public class ShellFile extends BaseExFile {
             file.isDirectory = true;
         }
 
-        file.name = name;
+        if(!name.equals(".") || file.name==null) {
+            file.name = name;
+        }
 
         if (!file.name.equals("/")) {
-            file.parent = dir;
+            file.parent = parentDir;
         }
         file.updateFullPath();
         file.permissions = line.substring(0, 10);
         file.shortSize = line.substring(34, 41).trim();
+        file.loadInfoDone = true;
     }
 
     public void updateFullPath() {
@@ -88,12 +97,24 @@ public class ShellFile extends BaseExFile {
 
     @Override
     public String getShortSize() {
+        loadDataIfNeed();
         return shortSize;
     }
 
     @Override
     public boolean isDir() {
+        loadDataIfNeed();
         return isDirectory;
+    }
+
+    private void loadDataIfNeed(){
+        if (!loadInfoDone) {
+            ThreadUtils.runAndWait((lock)->{
+                loadDirInfo(() -> {
+                    lock.countDown();
+                });
+            });
+        }
     }
 
     @Override
@@ -132,6 +153,7 @@ public class ShellFile extends BaseExFile {
 
     @Override
     public String getPerm() {
+        loadDataIfNeed();
         return permissions;
     }
 

@@ -14,6 +14,14 @@ public final class KLog {
         android.util.Log.v(TAG, messageAndLocation);
         stringBuilder.append(messageAndLocation);
     }
+
+    public static void d(Object object) {
+        String messageAndLocation = getLocation() + ((object != null) ? object.toString() : "null");
+
+        android.util.Log.d(TAG, messageAndLocation);
+        stringBuilder.append(messageAndLocation);
+    }
+
     public static void mark() {
         v("call...");
     }
