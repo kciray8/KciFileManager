@@ -346,12 +346,6 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
 
-        MenuItem showFolderPropItem = menu.findItem(R.id.show_root_actions);
-        showFolderPropItem.setOnMenuItemClickListener(item -> {
-            openContextMenu(activeDirView.backNavElement.getView());
-            return false;
-        });
-
         MenuItem addNewFolderItem = menu.findItem(R.id.add_new_folder);
         addNewFolderItem.setOnMenuItemClickListener(item -> {
             activeDirView.addNewFolder();

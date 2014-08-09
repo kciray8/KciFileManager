@@ -42,6 +42,7 @@ public class DirElement {
     private ExFile file;
     private View view;
     private boolean backButton;
+    private boolean thisButton;
     private TextView pathText;
     private TextView sizeTextView;
     private TextView permissionTextView;
@@ -94,13 +95,19 @@ public class DirElement {
             file.changeName(str, success -> {
                 if (success) {
                     MainActivity.getInstance().runOnUiThread(() -> {
-                        pathText.setText(str);
+                        if (!isFunctionalButton()) {
+                            pathText.setText(str);
+                        }
                     });
                 } else {
                     ToastUtils.show("Ошибка при переименовании файла");
                 }
             });
         });
+    }
+
+    private boolean isFunctionalButton() {
+        return isThisButton() || isBackButton();
     }
 
     public boolean isDir() {
@@ -115,8 +122,17 @@ public class DirElement {
     public static DirElement getBackNavElement(Context context, ExFile file, DirView dirView) {
         DirElement dirElement = new DirElement(context, file, dirView);
 
-        dirElement.pathText.setText("(...) " + L.tr(R.string.up));
+        dirElement.pathText.setText("..    [" + L.tr(R.string.up) + "]");
         dirElement.backButton = true;
+
+        return dirElement;
+    }
+
+    public static DirElement getThisNavElement(Context context, ExFile file, DirView dirView) {
+        DirElement dirElement = new DirElement(context, file, dirView);
+
+        dirElement.pathText.setText(".     [" + L.tr(R.string.thisDir) + "]");
+        dirElement.thisButton = true;
 
         return dirElement;
     }
@@ -133,6 +149,11 @@ public class DirElement {
         return backButton;
     }
 
+    public boolean isThisButton() {
+        return thisButton;
+    }
+
+
     static Comparator<DirElement> comparator = new DirElementComparator();
 
     public static Comparator<DirElement> getComparator() {
@@ -143,10 +164,10 @@ public class DirElement {
         @Override
         public int compare(DirElement lhs, DirElement rhs) {
             //Back button always in top
-            if (lhs.isBackButton()) {
+            if (lhs.isBackButton() || lhs.thisButton) {
                 return -1;
             }
-            if (rhs.isBackButton()) {
+            if (rhs.isBackButton() || rhs.thisButton) {
                 return 1;
             }
 

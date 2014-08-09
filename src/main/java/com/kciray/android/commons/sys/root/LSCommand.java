@@ -10,7 +10,7 @@ public class LSCommand extends SmartCommand {
     private ShellFile singleModeFile;
 
     public LSCommand(String path) {
-        super(0, "busybox ls -lcahpAe " + path);
+        super(0, "busybox ls -lcahpAe '" + path + "'");
 
         this.path = path;
         result.listOfFiles = new ArrayList<>();
@@ -23,22 +23,20 @@ public class LSCommand extends SmartCommand {
             setNeedRootFlag(true);
         } else {
             ShellFile file = ShellFile.buildFromLs(line, path);
-            if ((!file.getName().equals("."))) {
-                if (!file.getName().equals("..")) {
-                    if (singleModeFile == null) {
-                        result.listOfFiles.add(file);
-                    }
-                }
-            } else {
-                if (singleModeFile != null) {
+
+            if (singleModeFile != null) {
+                if (file.getName().equals(".")) {
                     String parentPath;
-                    if(singleModeFile.getParent() != null){
+                    if (singleModeFile.getParent() != null) {
                         parentPath = singleModeFile.getParent().getFullPath();
-                    }else{
+                    } else {
                         parentPath = null;
                     }
-
                     ShellFile.buildFromLs(line, parentPath, singleModeFile);
+                }
+            } else {
+                if (!file.getName().equals(".") && !file.getName().equals("..")) {
+                    result.listOfFiles.add(file);
                 }
             }
         }

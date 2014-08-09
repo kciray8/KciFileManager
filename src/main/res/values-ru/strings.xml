@@ -26,14 +26,17 @@
     <string name="delete_bm_success">Закладка была удалена</string>
     <string name="delete_bookmark">Удалить</string>
     <string name="history">История</string>
-    <string name="open_in_other_program">Открыть в другой программе…</string>
+    <string name="open_in_other_program">Открыть</string>
     <string name="update_done">Обновление успешно!</string>
     <string name="create_shortcut">Создать ярлык</string>
-    <string name="create_shortcut_wait">Creating shortcut. Wait please...</string>
-    <string name="input_path">Input path</string>
-    <string name="copy_full_path">Copy full path</string>
-    <string name="path_was_copy">Path \'%s\' was copy to clopboard</string>
-    <string name="need_root">Need root access!</string>
+    <string name="create_shortcut_wait">Создание ярлыка… Пожалуйста, подождите…</string>
+    <string name="input_path">Введите путь</string>
+    <string name="copy_full_path">Копировать путь</string>
+    <string name="path_was_copy">Путь \'%s\' был скопирован в буфер обмена</string>
+    <string name="need_root">Нужен root-доступ!</string>
     <string name="access_denied">Доступ закрыт!</string>
+    <string name="thisDir">Эта папка</string>
+    <string name="rename">Переименовать</string>
+    <string name="calc_size">Подсчитать размер</string>
 
 </resources>

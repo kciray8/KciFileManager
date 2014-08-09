@@ -48,7 +48,6 @@ import com.kciray.android.commons.sys.KLog;
 import com.kciray.android.commons.sys.L;
 import com.kciray.android.commons.sys.root.FileMgr;
 import com.kciray.commons.io.ExFile;
-import com.kciray.commons.lang.ObjectUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -120,7 +119,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
 
             if (dirElement.isBackButton()) {
                 goUp();
-            } else {
+            } else if (!dirElement.isThisButton()) {
                 ExFile dirElementFile = dirElement.getFile();
                 if (dirElementFile.isDir()) {
                     goToDir(dirElementFile);
@@ -170,17 +169,21 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
 
     public void rebuildDir() {
         newDirectory = FileMgr.getFile(newDirectory.getFullPath());//Renovate temp dir (StdDir or ShellDir)
-        KLog.v("^^^" + ObjectUtils.readFields(newDirectory));
         newDirectory.loadDirInfo(() -> {
-            KLog.v("---" + ObjectUtils.readFields(newDirectory));
             newDirectory.getSubDirsAsync(list -> {
                 if (list != null) {
                     directory = newDirectory;
 
                     Global.getContext().runOnUiThread(() -> {
                         adapter.clear();
-                        backNavElement = DirElement.getBackNavElement(context, directory, this);
-                        adapter.addElement(backNavElement);
+
+                        if (directory.getParent() != null) {
+                            backNavElement = DirElement.getBackNavElement(context, directory.getParent(), this);
+                            adapter.addElement(backNavElement);
+                        }
+
+                        DirElement thisNavElement = DirElement.getThisNavElement(context, directory, this);
+                        adapter.addElement(thisNavElement);
 
                         for (ExFile dirElementFile : list) {
                             DirElement dirElement;
@@ -275,12 +278,12 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
 
         if (!isRoot) {
             menu.add(Menu.NONE, FileMenu.RENAME.ordinal(),
-                    Menu.NONE, "Переименовать");
+                    Menu.NONE, getContext().getString(R.string.rename));
         }
 
         if ((file != null) && (file.isDir())) {
             menu.add(Menu.NONE, FileMenu.CALC_SIZE.ordinal(),
-                    Menu.NONE, "Подсчитать размер папки");
+                    Menu.NONE, getContext().getString(R.string.calc_size));
         }
 
         menu.add(Menu.NONE, FileMenu.SEND_TO_HOME_SCREEN.ordinal(),

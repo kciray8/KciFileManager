@@ -1,13 +1,24 @@
 package com.kciray.android.commons.sys.root;
 
-import android.test.InstrumentationTestCase;
+import android.test.AndroidTestCase;
 
-public class ShellFileTest extends InstrumentationTestCase {
-    private static final String mockLineData = "drwxrwx--x   25 system   system      4.0K Fri Aug  1 22:30:28 2014 data/";
+import java.io.File;
+
+public class ShellFileTest extends AndroidTestCase {
+    // '/'
+    private static final String mockLineData =                "drwxrwx--x   25 system   system      4.0K Fri Aug  1 22:30:28 2014 data/";
+    // '/storage'
+    private static final String mockLineStorageDot =          "d---r-x---    3 root     sdcard_r      80 Fri Aug  8 21:38:25 2014 ./";
+    private static final String mockLineStorageDoubleDot =    "drwxr-xr-x   15 root     root           0 Fri Aug  8 21:38:25 2014 ../";
+
+    private static final String tempDirName = "unitTestKciFMTemp";
+    File tempDir;
 
     @Override
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
+        tempDir = new File(System.getProperty("java.io.tmpdir") + File.separator + tempDirName);
+        tempDir.mkdirs();
     }
 
     public void testBuild() throws Exception {
@@ -24,6 +35,8 @@ public class ShellFileTest extends InstrumentationTestCase {
         //Test root
         ShellFile shellFileRoot = new ShellFile("/");
         checkRootFile(shellFileRoot);
+
+        //TODO add "/proc" unit test
     }
 
     private void checkDataFile(ShellFile file) {
@@ -32,6 +45,7 @@ public class ShellFileTest extends InstrumentationTestCase {
         assertTrue(file.isDir());
         assertEquals("drwxrwx--x", file.getPerm());
         assertEquals("data", file.getName());
+        assertEquals(file.getShortName(), file.getName());
         assertEquals("4.0K", file.getShortSize());
         assertEquals("/data", file.toString());
     }
@@ -41,6 +55,21 @@ public class ShellFileTest extends InstrumentationTestCase {
         assertEquals("/", file.getFullPath());
         assertTrue(file.isDir());
         assertEquals("", file.getName());
+        assertEquals(file.getShortName(), file.getName());
         assertEquals("/", file.toString());
+    }
+
+    public void testNewFolder() {
+        ShellFile fileWithSpaces = new ShellFile(tempDir + File.separator + "abc");
+        fileWithSpaces.makeDir(ok->{});
+        assertTrue(fileWithSpaces.isDir());
+    }
+
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        //TODO  - fix
+        //FileUtils.deleteDirectory(tempDir);
     }
 }

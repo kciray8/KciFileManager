@@ -41,4 +41,9 @@ public interface ExFile {
     void loadDirInfo(Runnable onComplete);
 
     void getDirSize(Consumer<Long> consumer, Runnable onFail);
+
+    /**
+     * @return getName() or "." or ".."
+     */
+    String getShortName();
 }

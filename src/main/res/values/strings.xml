@@ -44,4 +44,7 @@
     <string name="path_was_copy">Path \'%s\' was copy to clopboard</string>
     <string name="need_root">Need root access!</string>
     <string name="access_denied">Access denied!</string>
+    <string name="thisDir">This</string>
+    <string name="rename">Rename…</string>
+    <string name="calc_size">Calculate size…</string>
 </resources>

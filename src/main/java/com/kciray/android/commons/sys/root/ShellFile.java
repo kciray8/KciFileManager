@@ -14,6 +14,7 @@ public class ShellFile extends BaseExFile {
     private String parent;
     String fullPath;
     private String name;
+    private String shortName;
     private String permissions;
     private String shortSize;
     private boolean isDirectory;
@@ -44,13 +45,14 @@ public class ShellFile extends BaseExFile {
             file.isDirectory = true;
         }
 
-        if(!name.equals(".") || file.name==null) {
+        if (!name.equals(".") || file.name == null) {
             file.name = name;
         }
 
         if (!file.name.equals("/")) {
             file.parent = parentDir;
         }
+
         file.updateFullPath();
         file.permissions = line.substring(0, 10);
         file.shortSize = line.substring(34, 41).trim();
@@ -107,9 +109,9 @@ public class ShellFile extends BaseExFile {
         return isDirectory;
     }
 
-    private void loadDataIfNeed(){
+    private void loadDataIfNeed() {
         if (!loadInfoDone) {
-            ThreadUtils.runAndWait((lock)->{
+            ThreadUtils.runAndWait((lock) -> {
                 loadDirInfo(() -> {
                     lock.countDown();
                 });
@@ -198,5 +200,10 @@ public class ShellFile extends BaseExFile {
         });
         command.setOnDenyRoot(onFail);
         FileMgr.getIns().execute(command);
+    }
+
+    @Override
+    public String getShortName() {
+        return (shortName != null) ? shortName : name;
     }
 }

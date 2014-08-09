@@ -135,4 +135,9 @@ public class StdFile extends BaseExFile {
             consumer.accept(FileUtils.sizeOfDirectory(file));
         });
     }
+
+    @Override
+    public String getShortName() {
+        return getName();
+    }
 }

@@ -4,12 +4,6 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        a:id="@+id/show_root_actions"
-        a:icon="@drawable/folder"
-        app:showAsAction="always"
-        a:title="Show root Actions" />
-
-    <item
         a:id="@+id/add_new_folder"
         a:icon="@drawable/add_new_folder"
         app:showAsAction="always"
