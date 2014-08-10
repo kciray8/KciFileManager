@@ -71,7 +71,7 @@ public class DirElement {
 
         if (file.isDir()) {
             ImageView imageView = (ImageView) view.findViewById(R.id.icon);
-            imageView.setImageResource(R.drawable.folder);
+            imageView.setImageResource(R.drawable.ic_action_collection);
         }
         setFileSize(file.getShortSize());
 
@@ -91,7 +91,7 @@ public class DirElement {
     }
 
     public void rename() {
-        DialogUtils.inputString("Введите новое имя", file.getName(), str -> {
+        DialogUtils.inputString(MainActivity.getInstance().getString(R.string.enter_new_name), file.getName(), str -> {
             file.changeName(str, success -> {
                 if (success) {
                     MainActivity.getInstance().runOnUiThread(() -> {
@@ -100,7 +100,7 @@ public class DirElement {
                         }
                     });
                 } else {
-                    ToastUtils.show("Ошибка при переименовании файла");
+                    ToastUtils.show(MainActivity.getInstance().getString(R.string.error_rename_file));
                 }
             });
         });
@@ -164,10 +164,16 @@ public class DirElement {
         @Override
         public int compare(DirElement lhs, DirElement rhs) {
             //Back button always in top
-            if (lhs.isBackButton() || lhs.thisButton) {
+            if (lhs.isBackButton()) {
+                return -2;
+            }
+            if (rhs.isBackButton()) {
+                return 2;
+            }
+            if (lhs.isThisButton()) {
                 return -1;
             }
-            if (rhs.isBackButton() || rhs.thisButton) {
+            if (rhs.isThisButton()) {
                 return 1;
             }
 

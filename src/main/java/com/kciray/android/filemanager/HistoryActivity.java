@@ -6,15 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
-
 import com.kciray.commons.io.ExFile;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HistoryActivity extends ListActivity {
     public static final String EXTRA_ID = "com.kciray.intent.extra.id";
@@ -29,6 +23,7 @@ public class HistoryActivity extends ListActivity {
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, MainActivity.getHistory());
 
         setListAdapter(adapter);
+        getListView().setBackgroundColor(getResources().getColor(R.color.history_bg));
     }
 
     @Override
@@ -38,5 +33,11 @@ public class HistoryActivity extends ListActivity {
         data.putExtra(EXTRA_ID, position);
         setResult(Activity.RESULT_OK, data);
         finish();
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(0, R.anim.slide_to_right);
     }
 }

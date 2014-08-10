@@ -62,5 +62,17 @@
             a:paddingBottom="@dimen/small_margin"
             a:src="@drawable/ic_right_arrow"
             a:background="?selectableItemBackground"/>
+
+        <ImageButton
+            a:id="@+id/open_history"
+            a:layout_width="wrap_content"
+            a:layout_toLeftOf="@id/input_and_navigate_button"
+            a:layout_height="wrap_content"
+            a:paddingLeft="@dimen/half_small_margin"
+            a:paddingRight="@dimen/half_small_margin"
+            a:paddingTop="@dimen/small_margin"
+            a:paddingBottom="@dimen/small_margin"
+            a:src="@drawable/ic_action_time"
+            a:background="?selectableItemBackground"/>
     </RelativeLayout>
 </LinearLayout>

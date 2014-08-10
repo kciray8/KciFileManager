@@ -5,27 +5,17 @@
 
     <item
         a:id="@+id/add_new_folder"
-        a:icon="@drawable/add_new_folder"
-        app:showAsAction="always"
-        a:title="Add new folder" />
-
-    <!--item
-        a:id="@+id/utils"
-        a:showAsAction="never"
-        a:title="Утилиты">
-    </item-->
-    <item
-        a:id="@+id/history"
-        a:showAsAction="never"
-        a:title="@string/history"/>
+        a:icon="@drawable/ic_action_new"
+        app:showAsAction="ifRoom"
+        a:title="@string/add_new_folder" />
 
     <item
         a:id="@+id/settings"
-        a:showAsAction="never"
-        a:title="Настройки"/>
+        app:showAsAction="never"
+        a:title="@string/settings"/>
 
     <item
         a:id="@+id/about"
-        a:showAsAction="never"
-        a:title="О программе" />
+        app:showAsAction="never"
+        a:title="@string/about_prog" />
 </menu>

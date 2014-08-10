@@ -71,6 +71,14 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         if (history.size() == historyMaxSize) {
             history.remove(history.size() - 1);
         }
+
+        if (history.size() > 0) {
+            ExFile lastFile = history.get(0);
+            if(lastFile.equals(file)){
+                return;//Not add duplicate
+            }
+        }
+
         history.add(0, file);
     }
 
@@ -153,7 +161,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
                 final MenuItem itemDelete = popupMenu.getMenu().add(R.string.delete_bookmark);
                 popupMenu.setOnMenuItemClickListener((item) -> {
                             if (item == itemDelete) {
-                                BookmarkManager.getInstance().deleteBookmark(((ExFile)data).getFullPath());
+                                BookmarkManager.getInstance().deleteBookmark(((ExFile) data).getFullPath());
                             }
                             return true;
                         }
@@ -194,9 +202,9 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         FileMgr.getIns().setPrefEngine(Integer.valueOf(engine));
 
         String subtitle;
-        if(!FileMgr.getIns().nullShell()){
-            subtitle = "BusyBox mode";
-        }else{
+        if (!FileMgr.getIns().nullShell()) {
+            subtitle = getString(R.string.busybox_mode);
+        } else {
             subtitle = "";
         }
         getSupportActionBar().setSubtitle(subtitle);
@@ -225,6 +233,10 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             DialogUtils.inputString(getString(R.string.input_path), path -> {
                 activeDirView.goToDir(FileMgr.getFile(path));
             });
+        });
+
+        bottomBar.findViewById(R.id.open_history).setOnClickListener(v -> {
+            openHistory();
         });
     }
 
@@ -352,11 +364,6 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
             return false;
         });
 
-        addMenuAction(menu, R.id.history, () -> {
-            Intent intent = new Intent(this, HistoryActivity.class);
-            startActivityForResult(intent, REQUEST_CODE_TO_HISTORY);
-        });
-
         addMenuAction(menu, R.id.settings, () -> {
             Intent intent = new Intent(MainActivity.this, FMPreferenceActivity.class);
             startActivity(intent);
@@ -368,6 +375,12 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
         });
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void openHistory() {
+        Intent intent = new Intent(this, HistoryActivity.class);
+        startActivityForResult(intent, REQUEST_CODE_TO_HISTORY);
+        overridePendingTransition(R.anim.slide_from_right, 0);
     }
 
     @Override
@@ -437,7 +450,7 @@ public class MainActivity extends ActionBarActivity implements KciNavDrawer.OnIt
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getStr(R.string.devMode))) {
-            DialogUtils.askQuestion("Требуется перезапуск!", "Изменения будут доступны только после перезапуска. Перезапустить приложение сейчас?",
+            DialogUtils.askQuestion(getString(R.string.need_restart), getString(R.string.need_restart_text),
                     AppUtils::restart);
         }
         if (key.equals(getStr(R.string.engine))) {

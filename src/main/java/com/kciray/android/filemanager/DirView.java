@@ -259,7 +259,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         boolean isRoot = file.getFullPath().equals("/");
 
         menu.setHeaderTitle(L.tr(R.string.actions));
-        menu.setHeaderIcon(R.drawable.info);
+        menu.setHeaderIcon(R.drawable.ic_action_view_as_list);
 
         if (!isRoot) {
             menu.add(Menu.NONE, FileMenu.OPEN_INTENT.ordinal(),
@@ -329,19 +329,20 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         String dirName = isRoot ? "/" : dirElement.getFile().getName();
 
         final ProgressDialog progressDialog = DialogUtils.showProgressDialog(
-                "Подсчёт размера для папки " + dirName);
+                MainActivity.getInstance().getString(R.string.calculating_size) + dirName);
 
         file.getDirSize(dirSize -> {
             final String strSize = String.format("%,d %s", dirSize, "[Byte]");
             KLog.v("&77777");
             activity.runOnUiThread(() -> {
                 progressDialog.cancel();
-                DialogUtils.showMessage("Размер директории:", strSize);
+                DialogUtils.showMessage(MainActivity.getInstance().getString(R.string.dir_size), strSize);
             });
         }, () -> {//On deny
             activity.runOnUiThread(() -> {
                 progressDialog.cancel();
-                DialogUtils.showMessage("Размер директории:", "Требуются root-права!");
+                DialogUtils.showMessage(MainActivity.getInstance().getString(R.string.dir_size),
+                        MainActivity.getInstance().getString(R.string.need_root));
             });
         });
     }
@@ -364,7 +365,7 @@ public class DirView extends FrameLayout implements AbsListView.OnScrollListener
         Intent addIntent = new Intent();
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, file.getName());
-        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getContext(), R.drawable.folder));
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getContext(), R.drawable.ic_action_collection));
         addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
 
         getContext().sendBroadcast(addIntent);

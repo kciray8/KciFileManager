@@ -47,4 +47,15 @@
     <string name="thisDir">This</string>
     <string name="rename">Rename…</string>
     <string name="calc_size">Calculate size…</string>
+    <string name="add_new_folder">Add new folder</string>
+    <string name="settings">Settings</string>
+    <string name="about_prog">About program</string>
+    <string name="need_restart">Need restart!</string>
+    <string name="need_restart_text">We need restart application. Do this now?</string>
+    <string name="enter_new_name">Enter new name</string>
+    <string name="error_rename_file">Error occurred when file renaming</string>
+    <string name="calculating_size">Calculate size </string>
+    <string name="dir_size">Size of directory:</string>
+    <string name="busybox_mode">BusyBox mode</string>
+    <string name="close">Close</string>
 </resources>

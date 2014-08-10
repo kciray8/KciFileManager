@@ -38,5 +38,14 @@
     <string name="thisDir">Эта папка</string>
     <string name="rename">Переименовать</string>
     <string name="calc_size">Подсчитать размер</string>
+    <string name="add_new_folder">Добавить новую папку</string>
+    <string name="settings">Настройки</string>
+    <string name="about_prog">О программе</string>
+    <string name="need_restart_text">Изменения будут доступны только после перезапуска. Перезапустить приложение сейчас?</string>
+    <string name="enter_new_name">Введите новое имя</string>
+    <string name="error_rename_file">Ошибка при переименовании файла</string>
+    <string name="calculating_size">Подсчёт размера для папки </string>
+    <string name="dir_size">Размер директории:</string>
+    <string name="close">Закрыть</string>
 
 </resources>
