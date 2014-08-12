@@ -1,9 +1,10 @@
 KciFileManager
 ==============
+####О приложении
+Простой файловый менеджер  
+[Установить с Google Play](https://play.google.com/store/apps/details?id=com.kciray.android.filemanager)
 
-Простой файловый менеджер
-
-*Функции*
-* выавы
-- вавы
-- авыавы
+####Функции
+* Два режима работы - через JavaAPI и BusyBox (поддержка root-доступа)
+- Закладки на папки
+- История
